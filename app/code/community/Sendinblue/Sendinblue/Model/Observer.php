@@ -73,7 +73,14 @@ class Sendinblue_Sendinblue_Model_Observer
     {
         $extra = array();
         $requestParameters = Mage::app()->getRequest()->getParams();
-        $extra = Mage::getModel('newsletter/subscriber')->loadByEmail($requestParameters['email'])->getData();
+        $collectionNews = Mage::getResourceModel('newsletter/subscriber_collection')->showStoreInfo()->addFieldToFilter('subscriber_email', $requestParameters['email'])->load();
+
+        foreach ($collectionNews as $subsdata) {
+            $extra = $subsdata;
+		}
+		$storeId = $extra['store_id'];
+		$storeData = Mage::getModel('core/store')->load($storeId);
+		$languageLabel = $storeData->getName();
         $sendinModule = Mage::getModel('sendinblue/sendinblue');
         $attributesName = $sendinModule->allAttributesName();
 
@@ -84,6 +91,7 @@ class Sendinblue_Sendinblue_Model_Observer
         $client = 0;
         $mergeArrayResponse = $sendinModule->mergeMyArray($attributesName, $extra);
         $mergeArrayResponse['CLIENT'] = $client;
+        $mergeArrayResponse['MAGENTO_LANG'] = $languageLabel;
         $emailAddResponce = $sendinModule->emailAdd($requestParameters['email'], $mergeArrayResponse, $newsletterStatus);
         return $this;
     }

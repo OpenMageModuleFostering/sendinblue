@@ -21,7 +21,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         parent::_construct();
         $this->_init('sendinblue/sendinblue');
         $this->MIAPI();
-        
+
     }
     /**
     * functions used for set module config
@@ -1150,10 +1150,10 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             $customerAddressData[$email] = array_merge($customerData, $customerAddress);
         }
         $newsLetterData = array();
-        $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->addFieldToFilter('subscriber_status', array('eq' => 1))->load();
         $count = 0;
-        foreach ( $newsletter->getItems() as $subscriber) {
-            $subsdata = $subscriber->getData();
+		$collectionNews = Mage::getResourceModel('newsletter/subscriber_collection')->showStoreInfo()->addFieldToFilter('subscriber_status', array('eq' => 1))->load();
+
+        foreach ($collectionNews as $subsdata) {
             $subscriberEmail = $subsdata['subscriber_email'];
             
             if ( !empty($customerAddressData[$subscriberEmail]) ) {
@@ -1164,6 +1164,9 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
                 $newsLetterData['client'] = $subsdata['customer_id']>0?1:0;
                 $responseByMerge[$count] = $this->mergeMyArray($attributesName, $newsLetterData, $subscriberEmail);
                 $responseByMerge[$count]['STORE_ID'] = $subsdata['store_id'];
+                $storeId = $subsdata['store_id'];
+				$storeData = Mage::getModel('core/store')->load($storeId);
+				$responseByMerge[$count]['MAGENTO_LANG'] = $storeData->getName();
             }
             $count++;                
         }
