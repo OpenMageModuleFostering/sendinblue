@@ -356,7 +356,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
                 $firstButton = true;
                 $lastButton = true;
                 $start = $page * $perPage;
-                $count = $sendinModule->getNewsletterSubscribeCount() + $sendinModule->getNewsletterUnSubscribeCount();
+                $count = $sendinModule->getCustAndNewslCount();
                 $noOfPaginations = ceil($count / $perPage);
                 if ($currentPage >= 7) {
                     $startLoop = $currentPage - 3;
@@ -383,7 +383,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
 
                 $collection = $sendinModule->getNewsletterSubscribe($start, $perPage);
                 $sendinUserStatus = $sendinModule->checkUserSendinStatus($collection);
-                
+
                 $sendinUserResult = isset($sendinUserStatus['data']) ? $sendinUserStatus['data'] : '';
                 if (count($collection) > 0) {
                     $i = 1;
@@ -393,7 +393,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
                         $email = isset($subscriber['email']) ? $subscriber['email'] : '';
                         $phone = isset($subscriber['SMS']) ? $subscriber['SMS'] : '';
 
-                        $client = (!empty($subscriber['customer_id']) > 0) ? $yes : $no ;
+                        $client = (!empty($subscriber['client']) > 0) ? $yes : $no ;
                         $showStatus = '';
                         $smsStatus = '';
                         if(isset($sendinUserResult[$email])) {
@@ -425,7 +425,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
                             }
                         }
 
-                        if ($subscriber['subscriber_status'] != 3) { 
+                        if ($subscriber['subscriber_status'] == 1) { 
                             $imgMagento = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" >';
                         }   
                         else {

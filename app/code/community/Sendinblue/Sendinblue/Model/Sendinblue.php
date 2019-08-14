@@ -1190,101 +1190,92 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         return $totalValue;
     }
 
+     /**
+     *  This method is count all distinct record in customer and newsletter emails.
+     */
+    public function getCustAndNewslCount()
+    {
+        $db = Mage::getSingleton('core/resource')->getConnection('core/write');
+        $query = "SELECT COUNT( * ) c
+                    FROM (
+                    SELECT cu.email
+                    FROM customer_entity cu
+                    UNION
+                    SELECT n.subscriber_email
+                    FROM newsletter_subscriber n) x ";
+        $countAllRec = $db->fetchAll($query);
+        return !empty($countAllRec['0']['c']) ? $countAllRec['0']['c'] : 0;
+    }
     /**
      *  This method is used to fetch all users from the default newsletter table to list
      * them in the Sendinblue magento module.
      */
     public function getNewsletterSubscribe($start, $perPage)
     {
-        $customerAddressData = array();
-        $attributesName = $this->allAttributesName();
-        $attributesName['email'] = 'email';
-        $attributesName['customer_id'] = 'entity_id';
-        
-        $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
+        $db = Mage::getSingleton('core/resource')->getConnection('core/write');
         $customerAddressCollection = Mage::getModel('customer/address');
-        foreach ($collection as $customer) {
-            $customerData = array();
-            $customerData = $customer->getData();
-            $email  = $customerData['email'];
-            $customerId = $customerData['entity_id'];
-            $collectionAddress = $customerAddressCollection->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$customerId);
-            $telephone = '';
-            $customerAddress = array();
-            foreach ($collectionAddress as $customerPhno) {
-                $customerAddress = $customerPhno->getData();
-                if (!empty($customerAddress['telephone']) && !empty($customerAddress['country_id'])) {
-                    $countryCode = $this->getCountryCode($customerAddress['country_id']);
-                    $customerAddress['telephone'] = $this->checkMobileNumber($customerAddress['telephone'], $countryCode);
-                }
-                $customerAddress['client'] = $customerId>0?1:0;
-            }
-            $customerAddressData[$email] = array_merge($customerData, $customerAddress);
-        }
-        
-        $newsLetterData = array();
-        $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
-        $count = 0;
-        $responseData = array();
-        foreach ( $newsletter->getItems() as $subscriber) {
-            $subsdata = $subscriber->getData();
-            $subscriberEmail = $subsdata['subscriber_email'];
-            $subscriberStatus = $subsdata['subscriber_status'];
-            if ( !empty($customerAddressData[$subscriberEmail]) ) {
-                $responseData[$count] = $this->mergeMyArray($attributesName, $customerAddressData[$subscriberEmail]);
-                unset($customerAddressData[$subscriberEmail]);
-                $responseData[$count]['subscriber_status'] = $subscriberStatus;
-                $responseData[$count]['email'] = $subscriberEmail;
-            }
-            else {
-                $newsLetterData['client'] = $subsdata['customer_id']> 0 ? 1 : 0;
-                $responseData[$count] = $this->mergeMyArray($attributesName, $newsLetterData);
-                $responseData[$count]['subscriber_status'] = $subscriberStatus;
-                $responseData[$count]['email'] = $subscriberEmail;
-            }
-            $count++;
-        }
+        $customerAddressData = array();
+        $allData = array();
+        $query = "select email from customer_entity
+                union
+                select subscriber_email from newsletter_subscriber limit $start , $perPage";
 
-        if (count($customerAddressData) > 0) {
-            foreach ($customerAddressData as $email => $cVal) {
-                $responseData[$count] = $this->mergeMyArray($attributesName, $cVal);
-                $responseData[$count]['subscriber_status'] = 3;
-                $responseData[$count]['email'] = $email;
-                $count++;
+        if (count($db->fetchAll($query)) > 0) {
+            foreach ($db->fetchAll($query) as $emailValue) {
+                $email = !empty($emailValue['email']) ? $emailValue['email'] : '';
+                $customerAddressData['email'] = $email;
+                $customerAddressData['SMS'] = '';
+                $queryID = "SELECT entity_id FROM customer_entity WHERE email = '".$email."'";
+                $customerId = $db->fetchAll($queryID);
+                if (!empty($customerId[0]['entity_id'])) {
+                    $collectionAddress = $customerAddressCollection->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$customerId[0]['entity_id']);
+                    $customerAddress = array();
+                    foreach ($collectionAddress as $customerPhno) {
+                        $customerAddress = $customerPhno->getData();
+                        if (!empty($customerAddress['telephone']) && !empty($customerAddress['country_id'])) {
+                            $countryCode = $this->getCountryCode($customerAddress['country_id']);
+                            $customerAddressData['SMS'] = $this->checkMobileNumber($customerAddress['telephone'], $countryCode);
+                        }
+                    }
+                    $customerAddressData['client'] = 1;
+                } else {
+                    $customerAddressData['client'] = 0;
+                }
+                $querySubs = "SELECT subscriber_status FROM newsletter_subscriber WHERE subscriber_email = '".$email."'";
+                $customerSubscribe = $db->fetchAll($querySubs);
+                $subsStatus = !empty($customerSubscribe[0]['subscriber_status']) ? $customerSubscribe[0]['subscriber_status'] : 0;
+                if ($subsStatus == 1){
+                    $customerAddressData['subscriber_status'] = 1;
+                } else {
+                    $customerAddressData['subscriber_status'] = 0;
+                }
+                $allData[] = $customerAddressData;
             }
         }
-        return array_slice($responseData, $start, $perPage, true);      
+        return $allData;
     }
+
 
     /**
      *  This method is used to fetch total count unsubscribe users from the default newsletter table to list
      * them in the Sendinblue magento module.
     */
-    public function getNewsletterUnSubscribeCount()
+	public function getNewsletterUnSubscribeCount()
     {
-        $coreResource = Mage::getSingleton('core/resource');
-        $tableCustomer = $coreResource->getTableName('customer/entity');
-        $tableNewsletter = $coreResource->getTableName('newsletter/subscriber');
-        
-        $readDbObject = Mage::getSingleton("core/resource")->getConnection("core_read");
-        $queryUnSubscribCounter1 = $readDbObject->select()
-            ->from( 
-                array('CE' => $tableCustomer),
-                array(''))
-            ->join(array('NS' => $tableNewsletter),
-                    'CE.entity_id=NS.customer_id',
-                    array('totalcoutn' => 'COUNT(*)'))
-            ->where("subscriber_status != 1 or subscriber_status is null");
-        $stmtUnSubscribCounter1 = $readDbObject->query($queryUnSubscribCounter1);
-        $unSubscribCounter1 = $stmtUnSubscribCounter1->fetch();
+        $db = Mage::getSingleton('core/resource')->getConnection('core/write');
+        $query = "SELECT COUNT( email ) as email FROM customer_entity";
+        $querySecond = "SELECT COUNT( subscriber_email ) as email
+                        FROM newsletter_subscriber where subscriber_status = 1 AND customer_id > 0";
+        $querythird = "SELECT COUNT( subscriber_email ) as email
+                        FROM newsletter_subscriber where subscriber_status != 1 AND customer_id = 0";
+        $countCust = $db->fetchAll($query);
+        $countUnsubsCust = $db->fetchAll($querySecond);
+        $countUnsubs = $db->fetchAll($querythird);
 
-        $queryUnSubscribCounter2 = $readDbObject->select()
-            ->from($tableNewsletter,array('totalcoutn' => 'COUNT(*)'))            
-            ->where("customer_id = 0 AND subscriber_status = 3");
-        $stmtUnSubscribCounter2 = $readDbObject->query($queryUnSubscribCounter2);
-        $unSubscribCounter2 = $stmtUnSubscribCounter2->fetch();
-
-        return ($unSubscribCounter1['totalcoutn'] + $unSubscribCounter2['totalcoutn']);            
+        $custAll = !empty($countCust['0']['email']) ? $countCust['0']['email'] : 0;
+        $allsubsUser = !empty($countUnsubsCust['0']['email']) ? $countUnsubsCust['0']['email'] : 0;
+        $UnsNl = !empty($countUnsubs['0']['email']) ? $countUnsubs['0']['email'] : 0;
+        return $totalUns =  ($custAll + $UnsNl) - $allsubsUser; 
     }
 
     /**
