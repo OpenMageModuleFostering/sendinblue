@@ -27,7 +27,7 @@ class Sendinblue_Sendinblue_Model_Observer
 			$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($customer_emails);
 		}
 		if ($responce->result)
-			Mage::getSingleton('core/session')->addSuccess('Total of '.$responce->result->unsubEmailsCounts.' record(s) were Unsubscribed');
+			Mage::getModel('core/session')->addSuccess('Total of '.$responce->result->unsubEmailsCounts.' record(s) were Unsubscribed');
 		return $this;
 	}
 
@@ -48,7 +48,7 @@ class Sendinblue_Sendinblue_Model_Observer
 			$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($customer_emails);
 		}
 		if ($responce->result)
-			Mage::getSingleton('core/session')->addSuccess('Total of '.$responce->result->unsubEmailsCounts.' record(s) were Unsubscribed');
+			Mage::getModel('core/session')->addSuccess('Total of '.$responce->result->unsubEmailsCounts.' record(s) were Unsubscribed');
 		return $this;
 	}
 	public function adminCustomerSubscribe($observer)
@@ -68,7 +68,7 @@ class Sendinblue_Sendinblue_Model_Observer
 			$responce = Mage::getModel('sendinblue/sendinblue')->addEmailList($customer_emails);
 		}
 		if ($responce->result)
-			Mage::getSingleton('core/session')->addSuccess('Total of '.$responce->result->infoUpdatedCount.' record(s) were subscribed');
+			Mage::getModel('core/session')->addSuccess('Total of '.$responce->result->infoUpdatedCount.' record(s) were subscribed');
 		return $this;
 	}
 	public function subscribeObserver($observer)
@@ -230,17 +230,20 @@ class Sendinblue_Sendinblue_Model_Observer
 		$data = $observer->subscriber;
 		$params = Mage::app()->getRequest()->getParams();
 		$params = empty($params)?array():$params;
+
 		if (empty($params['firstname']) && empty($params['lastname']))
 		{
 			$sibObj = Mage::getModel('sendinblue/sendinblue');
+			$subscriber_email = $data->subscriber_email;
+
 			if($data->subscriber_status == 3)
-				$sibObj->emailDelete($data->subscriber_email);
-			elseif ($data->subscriber_status == 1)
+				$sibObj->emailDelete($subscriber_email);
+			elseif ($data->subscriber_status == 1 && !empty($subscriber_email))
 			{
 				$sibObj->emailSubscribe($data->subscriber_email);
-				if(!empty($params['email']))
-				$sibObj->sendWsTemplateMail($data->subscriber_email);
-
+				if( !isset($params['newsletter'])) {	
+					$sibObj->sendWsTemplateMail($data->subscriber_email);
+				}
 			}
 		}
 	}

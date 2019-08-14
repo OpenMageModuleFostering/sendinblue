@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Sendinblue_Sendinblue>
-            <version>1.2.3</version>
+            <version>1.2.4</version>
             <platform>ce</platform>
         </Sendinblue_Sendinblue>
     </modules>
@@ -204,6 +204,11 @@
 						<file>sendin_notification.html</file>
 					<type>html</type>
 				</notification_template>
+                <doubleoptin_template>
+                    <label>Sendinblue doubleoptin email module</label>
+                        <file>doubleoptin_temp.html</file>
+                    <type>html</type>
+                </doubleoptin_template>
 			</email>
 		</template>
 		

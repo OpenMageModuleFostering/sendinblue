@@ -169,24 +169,112 @@ $formKey = Mage::getSingleton('core/session')->getFormKey();
                                    <span title="<?php echo $this->__('Select the contact list where you want to save the contacts of your site Magento. By default, we have created a list Magento in your SendinBlue account and we have selected it'); ?>" class="toolTip">&nbsp;</span>
                                     </td>	
                                 </tr>
+<!-- double optin functionality -->
                                 <tr>
-                                	<td><label><?php echo $this->__('Manage email template'); ?></label></td>
-									<td> <select  name="template" id="template" style="width: 230.833px; height:23px;" class ="ui-widget ui-state-default ui-corner-all">
-										<option value=""><?php echo $this->__('Select template'); ?></option>
-                                    <?php
+                                <td></td>
+                                <td>
+								    <div class="col-md-6 left-wrapper radio_group_option">
+										<div class="form-group manage_subscribe_block">
+											<div>
+											  <input type="radio" value="nocon" <?php if(Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType') == 'nocon') echo 'checked="checked"'; ?> name="subscribe_confirm_type" id="no_follow_email">
+											  <label for="no_follow_email" class="radio-label"> <?php echo $this->__('No confirmation'); ?></label>
+											</div>
+											<div class="clearfix"></div>
+											<div style="display:block;" class="inner_manage_box">
+									  			<div class="ver_5" id="no-templates"><?php echo $this->__('With this option, contacts are directly added to your list when they enter their email address. No confirmation email is sent.'); ?></div>
+											</div>
+										</div>
+										<div class="form-group manage_subscribe_block">
+											<div class="col-md-10">
+											  <input type="radio" value="simplemail" <?php if(Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType') == 'simplemail') echo 'checked="checked"'; ?> id="follow_mail" name="subscribe_confirm_type">
+											  <label for="follow_mail" class="radio-label"> <?php echo $this->__('Simple confirmation'); ?></label><span title="<?php echo $this->__('This confirmation email is one of your SMTP templates. By default, we have created a Default Template - Single Confirmation. You can create and activate your SMTP templates by clicking here'); ?>" class="toolTip">
+											</span>
+											</div>
+											<div class="inner_manage_box"> 
+								  				<div class="clearfix"></div>
+								  					<div class="ver_5" id="create-templates"> <?php echo $this->__('By selecting this option, contacts are directly added to your list when they enter their email address on the form. A confirmation email will automatically be sent following their subscription.'); ?></div>
+								  					<div class="clearfix"></div>
+													  <div id="mail-templates">
+													  	<div class="listData ver_5 managesubscribeBlock"><select class="ui-state-default" name="template_simple"><option value=""><?php echo $this->__('Select Template'); ?></option>
+													    <?php
                                     $templatelist = $sendinModule->templateDisplay();
 
 									if (!empty($templatelist->result->campaign_records))
 									{
 									foreach ($templatelist->result->campaign_records as $template_data)
-									{ if ($template_data->templ_status === 'Active')
+									{ if ($template_data->templ_status === 'Active' && stristr($template_data->html_content, 'DOUBLEOPTIN') === false)
 									{ ?>                        
-                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == $sendinModule->getTemplateId()) echo 'selected = "selected"'; ?> ><?php echo $template_data->campaign_name; ?></option>					
+                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getStoreConfig('sendinblue/SendinTemplateId')) echo 'selected = "selected"'; ?> ><?php echo $template_data->campaign_name; ?></option>				
                                     <?php }}} ?>
-                                   </select>
+													    </select><span title="<?php echo $this->__('Select a SendinBlue template that will be sent personalized for each contact that subscribes to your newsletter'); ?>" class="toolTip"></span>
+														</div>
+													</div>
+								  					<div class="clearfix"></div>
+												  	<div id="mail-templates-active-state"></div>
+												</div>
+												<div class="clearfix"></div>
+											</div>
+											<div class="clearfix"></div>
+											<div class="form-group manage_subscribe_block">
+												<div class="col-md-10">
+								  					<input type="radio" value="doubleoptin" <?php if(Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType') == 'doubleoptin') echo 'checked="checked"'; ?> id="double_optin" name="subscribe_confirm_type">
+								  					<label for="double_optin" class="radio-label"> <?php echo $this->__('Double opt-in confirmation'); ?></label><span title="<?php echo $this->__("If you select the Double Opt-in confirmation, subscribers will receive an email inviting them to confirm their subscription.Contact will be saved in the 'FORM' folder, on the 'Temp - DOUBLE OPT-IN' list. After confirmation, the contact will be saved in the 'Corresponding List' selected below."); ?>" class="toolTip">
+													</span></div>
+								<div class="inner_manage_box"> 
+								  <div class="clearfix"></div>
+								  <!-- Please select a template with the [DOUBLEOPTIN] link -->
+								  <div id="create-doubleoptin-templates">
+								    <p><?php echo $this->__('Once the form has been completed, your contact will receive an email with a link to confirm their subscription.'); ?></p></div>
+								  <!-- Redirect URL after click on the validation email -->
+								  <div class="clearfix"></div>
+								  <div id="doubleoptin-redirect-url-area" class="form-group clearfix"> 
+								    <input type="checkbox" class="openCollapse" <?php if(Mage::getStoreConfig('sendinblue/SendinOptinRedirectUrlCheck') == 'yes') echo 'checked="checked"'; ?> value="yes" name="optin_redirect_url_check" id="doptin_redirect_span_icon">
+								    <a href=""> <?php echo $this->__('Redirect URL after clicking in the validation email'); ?> </a> 
+								    <!-- <label style="margin-bottom: 5px;"></label> -->
+								    
+								    <div id="mail-doubleoptin-redirect" class="collapse">
+								      <p style="width: 90%;text-align: justify;text-justify: inter-word;">       
+								      <?php echo $this->__('Redirect your contacts to a landing page or to your website once they have clicked on the confirmation link in the email.'); ?></p>
+								      <input type="url" style="margin-bottom:10px;width:370px" value="<?php echo Mage::getStoreConfig('sendinblue/SendinDoubleoptinRedirectUrl'); ?>" placeholder="http://your-domain.com" class="form-control" name="doubleoptin-redirect-url" id="doubleoptin-redirect-url">
+								      <div class="clearfix"></div>
+								      <div class="pull-left" id="doubleoptin-redirect-message"> </div>
+								      <div class="clearfix"></div>
+								    </div>
+									  </div>
 
-                                   <span title="<?php echo $this->__('Select a SendinBlue template that will be sent personalized for each contact that subscribes to your newsletter'); ?>" class="toolTip">&nbsp;</span></td>
-								</tr>	
+									  <!-- Send a final confirmation email -->
+									  <div class="clearfix"></div>
+									  <div id="doubleoptin-final-confirmation-area" class="form-group clearfix"> 
+									    <input type="checkbox" class="openCollapse" <?php if(Mage::getStoreConfig('sendinblue/SendinFinalConfirmEmail') == 'yes') echo 'checked="checked"'; ?> value="yes" name="final_confirm_email" id="doptin_final_confirm_email">
+									    <a href="#doubleoptin-final-confirm"> <?php echo $this->__('Send a final confirmation email'); ?> </a>
+
+									    <div id="doubleoptin-final-confirm" class="collapse">
+									      <p><?php echo $this->__('Once a contact has clicked in the double opt-in confirmation email, send them a final confirmation email'); ?></p>
+									      <div style="text-align: left;" class="listData ver_5 managesubscribeBlock"><select  class="ui-state-default" name="template_final"><option value=""><?php echo $this->__('Select Template'); ?></option>
+									    <?php
+                                    $templatelist = $sendinModule->templateDisplay();
+
+									if (!empty($templatelist->result->campaign_records))
+									{
+									foreach ($templatelist->result->campaign_records as $template_data)
+									{ if ($template_data->templ_status === 'Active' && stristr($template_data->html_content, 'DOUBLEOPTIN') === false)
+									{ ?>                        
+                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getStoreConfig('sendinblue/SendinTemplateFinal')) echo 'selected = "selected"'; ?> ><?php echo $template_data->campaign_name; ?></option>					
+                                    <?php }}} ?></select><span title="<?php echo $this->__('Select a SendinBlue template that will be sent personalized for each contact that subscribes to your newsletter'); ?>"class="toolTip"></span></div>
+									    	<div class="clearfix"></div>
+									    	<div class="pull-left" id="final-mail-templates"></div>
+									    	<div class="clearfix"></div> 
+									    	</div>
+									    				<div  id="doubleoptin-templates-active-state">
+								    
+														</div>
+													</div>
+											</div>
+										</div>
+										<div class="clearfix"></div>
+
+									</td>
+                                </tr>
                                 <tr>
                                 <td>&nbsp;</td>
                                 <td class="a-left">
@@ -575,6 +663,26 @@ $style_smtp = '';
         </td>
         </tr>
         
+        <tr class='sib_datepicker' style="display:none;">
+        <td valign="top"><label><?php echo $this->__('Schedule your sms campaign'); ?></label></td>
+        <td>
+        <input name="sib_datetimepicker" class="input_bx Datepicker" id="sib_datetimepicker" type="text" value="" autocomplete="off" />&nbsp;&nbsp;
+        <select name="hour">
+		 <option value='0'><?php echo $this->__('Hour'); ?></option>
+		 <?php for($i=1;$i<=23;$i++){ ?>
+		 <option><?php echo $i; ?></option>
+		 <?php } ?>
+		 </select>&nbsp;&nbsp;
+		 <select name="minute">
+		 <option value='0'><?php echo $this->__('Minute'); ?></option>
+		 <?php for($i=5;$i<=55;$i=$i+5){ ?>
+		 <option><?php echo $i; ?></option>
+		 <?php } ?>
+		 </select>
+        
+        </td>
+        </tr>
+
         <tr>
         <td valign="top"><label><?php echo $this->__('Sender'); ?></label></td>
         <td>

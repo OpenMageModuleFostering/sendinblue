@@ -297,10 +297,71 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	*/
 	public function getTemplateId()
 	{
-		$TemplateId = $this->getGeneralConfig('Sendin_Template_Id', Mage::app()->getStore()->getStoreId());
+		$TemplateId = $this->getGeneralConfig('SendinTemplateId', Mage::app()->getStore()->getStoreId());
 		if (!$TemplateId)
 			return false;
 		return $TemplateId;
+	}
+	/**
+	* functions used for get value final email recive.
+	*/
+	public function getFinalTemplate()
+	{
+		$FinalTemplate = $this->getGeneralConfig('SendinTemplateFinal', Mage::app()->getStore()->getStoreId());
+		if (!$FinalTemplate)
+			return false;
+		return $FinalTemplate;
+	}
+	/**
+	* functions used for get value subscribe type like doubleoptin and simple.
+	*/
+	public function getSubscribeConfirmType()
+	{
+		$SubscribeConfirmType = $this->getGeneralConfig('SendinSubscribeConfirmType', Mage::app()->getStore()->getStoreId());
+		if (!$SubscribeConfirmType)
+			return false;
+		return $SubscribeConfirmType;
+	}
+	/**
+	* functions used for get value for redirect url
+	*/
+	public function getOptinRedirectUrlCheck()
+	{
+		$OptinRedirectUrlCheck = $this->getGeneralConfig('SendinOptinRedirectUrlCheck', Mage::app()->getStore()->getStoreId());
+		if (!$OptinRedirectUrlCheck)
+			return false;
+		return $OptinRedirectUrlCheck;
+	}
+	/**
+	* functions used for get double optin redirect url after click email link.
+	*/
+	public function getSendinDoubleoptinRedirectUrl()
+	{
+		$SendinDoubleoptinRedirectUr = $this->getGeneralConfig('SendinDoubleoptinRedirectUrl', Mage::app()->getStore()->getStoreId());
+		if (!$SendinDoubleoptinRedirectUr)
+			return false;
+		return $SendinDoubleoptinRedirectUr;
+	}
+	/**
+	* functions used for get final confirmation email for double optin functionality.
+	*/
+	public function getSendinFinalConfirmEmail()
+	{
+		$SendinFinalConfirmEmail = $this->getGeneralConfig('SendinFinalConfirmEmail', Mage::app()->getStore()->getStoreId());
+		if (!$SendinFinalConfirmEmail)
+			return false;
+		return $SendinFinalConfirmEmail;
+	}
+
+    /**
+	* functions used for get doubleoptin id geting by sendinblue.
+	*/
+	public function getSendinOptinListId()
+	{
+		$SendinOptinListId = $this->getGeneralConfig('SendinOptinListId', Mage::app()->getStore()->getStoreId());
+		if (!$SendinOptinListId)
+			return false;
+		return $SendinOptinListId;
 	}
 
 	/**
@@ -353,7 +414,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     /**
      * functions used for email adds
      */
-	public function emailAdd($email, $extra, $is_subscribed = '')
+	public function emailAdd($email, $extra, $is_subscribed = '', $list_id = '')
 	{
 		$attributesName = $this->allAttributesName();
 		if ($this->module_enable == 1 && $this->getSyncronizeStatus())
@@ -361,6 +422,15 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			$apikey = $this->api_key;
 			if (!$apikey)
 				return false;
+
+			$Sendin_Confirm_Type = Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType');
+			if (empty($list_id)) {
+	            if (isset($Sendin_Confirm_Type) && $Sendin_Confirm_Type === 'doubleoptin') {
+	                $list_id = Mage::getStoreConfig('sendinblue/SendinOptinListId');
+	            } else {
+	                $list_id = $this->lists_ids;
+	            }
+        	}
 			$params = array();
 			$params['email'] = $email;
 			$params['id'] = '';
@@ -378,7 +448,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			{
 				$params['attributes_value'] = $email;
 			}
-			$params['listid'] = $this->lists_ids;
+			$params['listid'] = $list_id;
 
 			return $this->callServer('USERCREADITM', $params);
 		} else
@@ -459,9 +529,9 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				}
 			}
 			if (count($emails) > 0)
-				Mage::getSingleton('core/session')->addSuccess(count($emails).Mage::helper('sendinblue')->__(' Total of record(s) have been updated'));
+				Mage::getModel('core/session')->addSuccess(count($emails).Mage::helper('sendinblue')->__(' Total of record(s) have been updated'));
 			else
-				Mage::getSingleton('core/session')->addSuccess(count($emails).Mage::helper('sendinblue')->__(' Total of record(s) have been updated'));
+				Mage::getModel('core/session')->addSuccess(count($emails).Mage::helper('sendinblue')->__(' Total of record(s) have been updated'));
 			return true;
 		}
 		else
@@ -470,20 +540,29 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     /**
      * This method is used for add email list
      */
-    public function addEmailList($email)
+    public function addEmailList($email, $list_id = '')
     {
         if ($this->module_enable == 1 && $this->getSyncronizeStatus())
         {
             $apikey = $this->api_key;
             if (!$apikey)
                 return false;
+
+            $Sendin_Confirm_Type = Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType');
+			if (empty($list_id)) {
+	            if (isset($Sendin_Confirm_Type) && $Sendin_Confirm_Type === 'doubleoptin') {
+	                $list_id = Mage::getStoreConfig('sendinblue/SendinOptinListId');
+	            } else {
+	                $list_id = $this->lists_ids;
+	            }
+        	}
             $params = array();
             $params['email'] = $email;
             $params['id'] = '';
             $params['blacklisted'] = 0;
             $params['attributes_name']  = '';
             $params['attributes_value'] = '';
-            $params['listid'] = $this->lists_ids;
+            $params['listid'] = $list_id;
             return $this->callServer('USERCREADITM', $params);
         } else
             return false;
@@ -568,7 +647,61 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             $params['list'] = 'ALL';
             return $this->callServer('DISPLAYLISTDATA', $params);
         } else
-            return Mage::getSingleton('core/session')->addError('Sendinblue not enabled');
+            return Mage::getModel('core/session')->addError('Sendinblue not enabled');
+    }
+
+    /**
+     * Fetches all folders and all list within each folder of the user's Sendinblue 
+     * account and displays them to the user. 
+     */
+    public function checkFolderListDoubleoptin()
+    {
+        $params = array();
+        $s_array = array();
+        $list_response = $this->callServer('DISPLAY-FOLDERS-LISTS', $params);
+        $list_response = json_encode($list_response);
+        $res = json_decode($list_response, true);
+        if (isset($res) && !empty($res))
+        {
+            foreach ($res as $value)
+            {
+                if (strtolower($value['name']) == 'form')
+                {
+		            if (!empty($value['lists']))
+		            {
+		                foreach ($value['lists'] as $key => $val)
+		                {
+		                    if ($val['name'] == 'Temp - DOUBLE OPTIN')
+		                        $s_array['optin_id'] = $key;
+		                }
+		            }
+                }
+            }
+            if (count($s_array) > 0) {
+                $return = $s_array;
+            } else {
+                $return = false;
+            }
+        }
+        return $return;
+    }
+    /**
+     * Create temporary doubleoptin list if not exist in Sendinblue.
+     */
+    public function createListIdDoubleoptin()
+    {
+    	$data = array();
+    	$data['foldername'] = 'FORM';
+		$res = $this->callServer('ADDFOLDER', $data);
+		$folder_id = $res->folder_id;
+		if (!empty($folder_id)) {
+		    $params = array();
+		    $params['listname'] = 'Temp - DOUBLE OPTIN';
+		    $params['list_parent'] = $folder_id;
+		    $list_response = $this->callServer('NEWLIST', $params);
+		    $list_id = $list_response->result;
+		}
+		return $list_id;
     }
 
     /**
@@ -603,7 +736,6 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         }
         return $array;
     }
-
     /**
      *  folder create in Sendinblue after removing from Sendinblue
      */
@@ -868,7 +1000,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			$sendin_switch->saveConfig('sendinblue/Sendin_Notify_Cron_Executed', 0, 'default', 0);
 		}
 		
-		Mage::getSingleton('core/session')->addSuccess(Mage::helper('sendinblue')->__('Notification mail has been sent'));
+		Mage::getModel('core/session')->addSuccess(Mage::helper('sendinblue')->__('Notification mail has been sent'));
 	}
 
 	/**
@@ -1008,7 +1140,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				$newsdata['SMS'] = $this->checkMobileNumber($newsdata['SMS'], $country_id);
 			}
 			$key_value = $newsdata;
-			fwrite($handle, implode(',', $key_value)."\n");
+			fwrite($handle, str_replace("\n", "",implode(',', $key_value))."\n");
 		}
 		fclose($handle);
 		$total_value = count($resp);
@@ -1332,16 +1464,30 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	/**
 	* Send template email by sendinblue for newsletter subscriber user  .
 	*/
-	public function sendWsTemplateMail($to)
+	public function sendWsTemplateMail($to, $templateid = false)
 	{
 		$mail_url = "http://mysmtp.mailin.fr/ws/template/"; //Curl url
 
+		$Sendin_Confirm_Type = $this->getSubscribeConfirmType();
+		 if (empty($Sendin_Confirm_Type) || $Sendin_Confirm_Type == 'nocon') {
+            return false;
+        }
+        if (!$templateid) {
+            if ($Sendin_Confirm_Type == 'simplemail') {
+                $temp_id_value = $this->getTemplateId();
+                $templateid = !empty($temp_id_value) ? $temp_id_value : '';// should be the campaign id of template created on mailin. Please remember this template should be active than only it will be sent, otherwise it will return error.
+            }
+
+            if ($Sendin_Confirm_Type == 'doubleoptin') {
+                $path_resp = '';
+                $email_user = base64_encode($to);
+                $path_resp = Mage::getBaseUrl().'sendinblue/ajax/mailResponce?value='.base64_encode($to);
+                return $this->defaultDoubleoptinTemp($to, $path_resp);
+            }
+        }
 		$smtpPassword = $this->getSmtpPassword();
 		$user = $this->getUserName();
-		$to = str_replace('+', '%2B', $to);
-		$temp_id_value = $this->getTemplateId();
-		$templateid = !empty($temp_id_value) ? $temp_id_value : ''; // should be the campaign id of template created on mailin. Please remember this template should be active than only it will be sent, otherwise it will return error.
-
+		//$to = str_replace('+', '%2B', $to);
 		$post_data['to'] = $to;
 		$post_data['key'] = $smtpPassword;
 		$post_data['user'] = $user;
@@ -1359,6 +1505,52 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		$res = json_decode($return_data, true);
 		return $res;
 	}
+	/**
+    * send double optin template and manage.
+    */
+    public function defaultDoubleoptinTemp($subscriber_email, $doubleoptin_url)
+    {
+        $locale = Mage::app()->getLocale()->getLocaleCode();
+        $email_template_variables = array();
+        if ($locale == 'fr_FR')
+        {
+            $email_template_variables['text0'] = 'Confirmez votre inscription';
+            $sender_name = 'SendinBlue';
+            $sender_email = 'contact@sendinblue.com';
+        }
+        else
+        {   
+            $email_template_variables['text0'] = 'Please confirm your subscription';
+            $sender_name = 'SendinBlue';
+            $sender_email = 'contact@sendinblue.com';
+        }
+		try {
+				$email_template = Mage::getModel('core/email_template')->loadDefault('doubleoptin_template');
+				$temp = $email_template->template_text;
+				$web_site = Mage::app()->getWebsite()->getName();
+				preg_match_all('#{(.*)}#', $temp, $match);
+
+				$temp_params = array(
+				'{double_optin}'=>$doubleoptin_url,
+				'{site_name}'=>	$web_site			
+				);
+				foreach($match[0] as $var=>$value){ 
+				$temp = preg_replace('#'.$value.'#',$temp_params[$value],$temp);
+				}
+
+				$email_template->template_text = $temp;
+				$email_template->getProcessedTemplate($email_template_variables);
+				$email_template->setSenderName($sender_name);
+				$email_template->setSenderEmail($sender_email);
+				$email_template->setTemplateSubject($email_template_variables['text0']);
+				return $email_template->send($subscriber_email, '', $email_template_variables);
+
+		}
+		catch(Exception $e) {
+			
+		}
+			
+    }
 
 	/**
 	* Get all temlpate list id by sendinblue.

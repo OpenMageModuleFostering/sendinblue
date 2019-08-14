@@ -116,6 +116,62 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
            echo $this->__($e->getMessage());
         }
 	}
+	public function mailResponceAction()
+	{
+		$post = $this->getRequest()->getParams();
+        try {
+        if (empty($post))
+           Mage::throwException($this->__('Invalid form data.'));
+
+       	$user_email = base64_decode($post['value']);
+		if ($user_email != '') {			
+			$newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->addFieldToFilter('subscriber_email', array('eq' => $user_email))->load();;
+			foreach ($newsletter->getItems() as $subscriber) {
+				$subsdata = $subscriber->getData();
+            	$subscriber_email = $subsdata['subscriber_email'];
+            	$subscriber_status = $subsdata['subscriber_status'];
+			}
+			$sendinModule = Mage::getModel('sendinblue/sendinblue');
+			if (!empty($subscriber_email) && $subscriber_status == 1) {
+				$listId = $sendinModule->getUserlists();
+				$doubleOptinId = Mage::getStoreConfig('sendinblue/SendinOptinListId');
+				$api_key = $sendinModule->getApiKey();
+		        $params['url'] = "https://api.sendinblue.com/v2.0";
+		        $params['api_key'] = $api_key;
+		        $obj_mailin = Mage::getModel('sendinblue/psmailin',$params);
+
+				$data = array( "email" => $subscriber_email,
+				        "attributes" => array(),
+				        "blacklisted" => 0,
+				        "listid" => array($listId),
+				        "listid_unlink" => array($doubleOptinId),
+				        "blacklisted_sms" => 0
+				    );
+
+				$responce = $obj_mailin->createUpdateUser($data);
+				$finalStatus = Mage::getStoreConfig('sendinblue/SendinFinalConfirmEmail');
+				if ($finalStatus === 'yes') {
+					$finalTempId = Mage::getStoreConfig('sendinblue/SendinTemplateFinal');
+					$sendinModule->sendWsTemplateMail($subscriber_email, $finalTempId);
+
+				}
+				$urlStatus = $sendinModule->getOptinRedirectUrlCheck();
+
+				if ($urlStatus == 'yes') {
+					$urlValue = $sendinModule->getSendinDoubleoptinRedirectUrl();
+					$this->_redirectUrl($urlValue);
+				} else {
+					$configValue = Mage::getStoreConfig('web/secure/base_url');
+					$this->_redirectUrl($configValue);
+				}
+			}
+		}
+		}
+		catch (Exception $e)
+        {
+           echo $this->__($e->getMessage());
+        }
+	}
 	public function emptyImportOldOrderAction()
     {
 		$post = $this->getRequest()->getPost();
@@ -467,6 +523,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 		try {
 		if (empty($post))
 			Mage::throwException($this->__('Invalid form data.'));
+			$list_id = str_replace(',', '|', $sendinModule->getUserlists());
 			$post_email = !empty($post['email'])?$post['email']:'';
 			$post_newsletter = !empty($post['newsletter'])?$post['newsletter']:'';
 			$temp_sub_status = ($post_newsletter == 0) ? 1 : 3;
@@ -503,7 +560,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 						$resp = $sendinModule->merge_my_array($attributesName, $customerData);
 						$resp['CLIENT'] = 1;
 						$resp['MAGENTO_LANG'] = $user_lang;
-						$responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter);
+						$responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter, $list_id);
                     }
                     else
                     {
@@ -512,7 +569,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
                     $subsdata = Mage::getModel('newsletter/subscriber')->loadByEmail($email)->getData();
                     $resp = $sendinModule->merge_my_array($attributesName, $subsdata);
                     $resp['CLIENT'] = $client;
-                    $responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter);   
+                    $responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter, $list_id);   
                     }
 				}
 				$sql = 'SELECT `subscriber_email` from '.$tableNewsletter.' where subscriber_email = "'.$post_email.'" ';

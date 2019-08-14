@@ -34,6 +34,37 @@ jQuery(document)
 						}						
 					});
 
+
+				//date picker function
+            	jQuery('#sib_datetimepicker').datepicker({ dateFormat: 'yy-mm-dd' });
+ 				//Double optin function
+				jQuery('.manage_subscribe_block input[name=subscribe_confirm_type]').click(function(){
+				  jQuery('.manage_subscribe_block .inner_manage_box').slideUp(); 
+				  jQuery(this).parents('.manage_subscribe_block').find('.inner_manage_box').slideDown();
+				  
+				});
+
+               jQuery('.openCollapse').each(function(){
+                if(!jQuery(this).is(":checked")){  
+                	jQuery(this).parent('.form-group').find('.collapse').hide();
+                }
+                });
+
+               jQuery('input[name=subscribe_confirm_type]').each(function(){               	
+               	 if(jQuery(this).is(":checked")){
+               	   jQuery(this).parents('.manage_subscribe_block').find('.inner_manage_box').show();	
+               	 }
+                });
+
+				jQuery('.openCollapse').click(function() {
+                     
+                     if (jQuery(this).is(":checked")){ 
+                          jQuery(this).parent('.form-group').find('.collapse').slideDown();
+                     } else { 
+                          jQuery(this).parent('.form-group').find('.collapse').slideUp();
+                     }
+                  });
+
 					function loadData(page) {
 					var ajaxcontentUrl = jQuery("#ajaxcontentUrl").val();
 						jQuery.ajax({
@@ -365,13 +396,21 @@ jQuery(document)
             }
             
             jQuery(".Sendin_Sms_Choice").click(function ()
-            { 
+            {
 				if (jQuery(this).val() == 1) {
 					jQuery(".multiplechoice").hide();
 					jQuery(".singlechoice").show();
 				} else {
 					jQuery(".multiplechoice").show();
 					jQuery(".singlechoice").hide();
+				}
+			});
+			jQuery(".Sendin_Sms_Choice").click(function ()
+            {
+				if (jQuery(this).val() == 2) {
+					jQuery(".sib_datepicker").show();
+				} else {
+					jQuery(".sib_datepicker").hide();
 				}
 			});
 			
