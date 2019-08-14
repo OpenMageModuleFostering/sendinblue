@@ -1,12 +1,12 @@
 {
     "name": "OpenMageModuleFostering/Sendinblue",
     "type": "magento-module",
-    "license": "OSL-V1.0",
+    "license": "OSL-v3.0",
     "homepage": "",
     "description": "Synchronize your Magento contacts with SendinBlue platform, easily send your marketing and transactional emails and SMS.",
     "authors": [
     {
-        "name": "SendinBlue",
+        "name": "Sendinblue",
         "email": "contact@sendinblue.com"
     }
 ],
