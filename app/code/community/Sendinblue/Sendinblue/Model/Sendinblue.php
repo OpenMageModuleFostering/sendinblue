@@ -1195,14 +1195,15 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      */
     public function getCustAndNewslCount()
     {
+        $prefix = Mage::getConfig()->getTablePrefix();        
         $db = Mage::getSingleton('core/resource')->getConnection('core/write');
         $query = "SELECT COUNT( * ) c
                     FROM (
                     SELECT cu.email
-                    FROM customer_entity cu
+                    FROM ". $prefix ."customer_entity cu
                     UNION
                     SELECT n.subscriber_email
-                    FROM newsletter_subscriber n) x ";
+                    FROM ". $prefix ."newsletter_subscriber n) x ";
         $countAllRec = $db->fetchAll($query);
         return !empty($countAllRec['0']['c']) ? $countAllRec['0']['c'] : 0;
     }
@@ -1212,20 +1213,21 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      */
     public function getNewsletterSubscribe($start, $perPage)
     {
+        $prefix = Mage::getConfig()->getTablePrefix();        
         $db = Mage::getSingleton('core/resource')->getConnection('core/write');
         $customerAddressCollection = Mage::getModel('customer/address');
         $customerAddressData = array();
         $allData = array();
-        $query = "select email from customer_entity
+        $query = "select email from ". $prefix ."customer_entity
                 union
-                select subscriber_email from newsletter_subscriber limit $start , $perPage";
+                select subscriber_email from ". $prefix ."newsletter_subscriber limit $start , $perPage";
 
         if (count($db->fetchAll($query)) > 0) {
             foreach ($db->fetchAll($query) as $emailValue) {
                 $email = !empty($emailValue['email']) ? $emailValue['email'] : '';
                 $customerAddressData['email'] = $email;
                 $customerAddressData['SMS'] = '';
-                $queryID = "SELECT entity_id FROM customer_entity WHERE email = '".$email."'";
+                $queryID = "SELECT entity_id FROM ". $prefix ."customer_entity WHERE email = '".$email."'";
                 $customerId = $db->fetchAll($queryID);
                 if (!empty($customerId[0]['entity_id'])) {
                     $collectionAddress = $customerAddressCollection->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$customerId[0]['entity_id']);
@@ -1241,7 +1243,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
                 } else {
                     $customerAddressData['client'] = 0;
                 }
-                $querySubs = "SELECT subscriber_status FROM newsletter_subscriber WHERE subscriber_email = '".$email."'";
+                $querySubs = "SELECT subscriber_status FROM ". $prefix ."newsletter_subscriber WHERE subscriber_email = '".$email."'";
                 $customerSubscribe = $db->fetchAll($querySubs);
                 $subsStatus = !empty($customerSubscribe[0]['subscriber_status']) ? $customerSubscribe[0]['subscriber_status'] : 0;
                 if ($subsStatus == 1){
@@ -1262,12 +1264,13 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     */
 	public function getNewsletterUnSubscribeCount()
     {
+        $prefix = Mage::getConfig()->getTablePrefix();
         $db = Mage::getSingleton('core/resource')->getConnection('core/write');
-        $query = "SELECT COUNT( email ) as email FROM customer_entity";
+        $query = "SELECT COUNT( email ) as email FROM ". $prefix ."customer_entity";
         $querySecond = "SELECT COUNT( subscriber_email ) as email
-                        FROM newsletter_subscriber where subscriber_status = 1 AND customer_id > 0";
+                        FROM ". $prefix ."newsletter_subscriber where subscriber_status = 1 AND customer_id > 0";
         $querythird = "SELECT COUNT( subscriber_email ) as email
-                        FROM newsletter_subscriber where subscriber_status != 1 AND customer_id = 0";
+                        FROM ". $prefix ."newsletter_subscriber where subscriber_status != 1 AND customer_id = 0";
         $countCust = $db->fetchAll($query);
         $countUnsubsCust = $db->fetchAll($querySecond);
         $countUnsubs = $db->fetchAll($querythird);

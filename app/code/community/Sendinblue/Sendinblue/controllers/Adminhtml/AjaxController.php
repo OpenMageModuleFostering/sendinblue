@@ -596,7 +596,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
                     else {
                         $client = 0;
                         $customerData = array();
-                        $subsdata = Mage::getModel('newsletter/subscriber')->loadByEmail($email)->getData();
+                        $subsdata = Mage::getModel('newsletter/subscriber')->loadByEmail($postEmail)->getData();
                         $resp = $sendinModule->mergeMyArray($attributesName, $subsdata);
                         $resp['CLIENT'] = $client;
                         $responce = $sendinModule->emailAdd($postEmail, $resp, $postNewsLetter, $listId);   
@@ -609,7 +609,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
                 $stmtSubscriberEmail = $readDbObject->query($querySubscriberEmail);
                 $customerDataNews = $stmtSubscriberEmail->fetch();
 
-                if ($customerData['entity_id'] !='' && $customerDataNews['subscriber_email'] == '' ) {                          
+                if (!empty($customerData['entity_id']) && empty($customerDataNews['subscriber_email'])) {                          
                     $newsLetterData = array(
                             "store_id" => $customerData['store_id'],
                             "customer_id" => $customerData['entity_id'],
