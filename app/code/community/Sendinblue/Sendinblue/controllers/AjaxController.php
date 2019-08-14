@@ -478,7 +478,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 				$locale = Mage::app()->getLocale()->getLocaleCode();
 				$responce = $sendinModule->emailSubscribe($post_email);
                 $responce_data = json_decode($responce);
-
+				$customerAddr = array();
 				if (isset($responce_data->errorMsg) == 'User not exists')
 				{
 					if (isset($custdata['entity_id']) != '')
@@ -493,8 +493,6 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 								$country_code = $sendinModule->getCountryCode($customerAddr['country_id']);
 								$customerAddr['telephone'] = $sendinModule->checkMobileNumber($customerAddr['telephone'], $country_code);	  
 							}
-							
-							
 						}
 						$customer = Mage::getModel("customer/customer");
 						$customer->setWebsiteId(Mage::app()->getWebsite()->getId());
@@ -504,13 +502,15 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 						$customerData = array_merge($customerAddr, $customer_name);
 						$resp = $sendinModule->merge_my_array($attributesName, $customerData);
 						$resp['CLIENT'] = 1;
+						$resp['MAGENTO_LANG'] = $user_lang;
 						$responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter);
                     }
                     else
                     {
                     $client = 0;
                     $customerData = array();
-                    $resp = $sendinModule->merge_my_array($attributesName, $customerData);
+                    $subsdata = Mage::getModel('newsletter/subscriber')->loadByEmail($email)->getData();
+                    $resp = $sendinModule->merge_my_array($attributesName, $subsdata);
                     $resp['CLIENT'] = $client;
                     $responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter);   
                     }

@@ -73,9 +73,10 @@ class Sendinblue_Sendinblue_Model_Observer
 	}
 	public function subscribeObserver($observer)
 	{
+		$extra = array();
 		$params = Mage::app()->getRequest()->getParams();
 		$params = empty($params)?array():$params;
-		$extra = array();
+		$extra = Mage::getModel('newsletter/subscriber')->loadByEmail($params['email'])->getData();
 		$sendinModule = Mage::getModel('sendinblue/sendinblue');
 		$attributesName = $sendinModule->allAttributesName();
 
