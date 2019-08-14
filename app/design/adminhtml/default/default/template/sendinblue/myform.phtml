@@ -162,9 +162,10 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
 									if (!empty($templatelist->result->campaign_records))
 									{
 									foreach ($templatelist->result->campaign_records as $template_data)
+									{ if ($template_data->templ_status === 'Active')
 									{ ?>                        
                                     <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getModel('sendinblue/sendinblue')->getTemplateId()) echo 'selected = "selected"' ?> ><?php echo $template_data->campaign_name; ?></option>					
-                                    <?php }} ?>
+                                    <?php }}} ?>
                                    </select>
 
                                    <span title="<?php echo $this->__('Select a SendinBlue template that will be sent personalized for each contact that subscribes to your newsletter'); ?>" class="toolTip">&nbsp;</span></td>

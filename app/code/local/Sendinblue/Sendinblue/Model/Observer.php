@@ -177,61 +177,7 @@ class Sendinblue_Sendinblue_Model_Observer
 			
 		}
 	}
-	public function ordersucess($observer)
-	{
-		$get_Enable_Status = Mage::getModel('sendinblue/sendinblue')->getEnableStatus();		
-		$get_order_status = Mage::getModel('sendinblue/sendinblue')->getOrderSmsStatus();		
-		$get_User_lists = Mage::getModel('sendinblue/sendinblue')->getUserlists();
-		$get_Tracking_Status = Mage::getModel('sendinblue/sendinblue')->getTrackingStatus();		
-		$value = Mage::getModel('sendinblue/sendinblue')->TrackingSmtp();
-		
-		$orders = Mage::getModel('sales/order')->getCollection();		
-		$order = $orders->getLastItem();
 
-		$order_Data = $order->getPayment()->getData();
-	
-		$customer = Mage::getSingleton('customer/session')->getCustomer();
-		$orderaddress = Mage::getModel('sales/order')->loadByIncrementId($order->increment_id);
-		
-		//for order sms send 	
-		if($get_Enable_Status && $get_order_status)
-		{  			
-			$locale = Mage::app()->getLocale()->getLocaleCode();					
-			$mobile = $orderaddress->getBillingAddress()->getTelephone();
-			$countryid = $orderaddress->getBillingAddress()->getCountryId();
-			$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
-			$sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$countryid.'" ';
-			$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
-			$data = $connection->fetchRow($sql);
-						
-			$mobile = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($mobile,$data['country_prefix']);
-			$email = $orderaddress->getBillingAddress()->getEmail();
-			$firstname = $orderaddress->getBillingAddress()->getFirstname();
-			$lastname = $orderaddress->getBillingAddress()->getLastname();
-			$ref_num = $order->getIncrementId();
-			$orderprice = $order->getGrandTotal();
-			$currencycode = $order->getBaseCurrencyCode();
-			$orderdate = $order->getCreatedAt();
-			if ($locale == 'fr_FR')
-			$ord_date = date('d/m/Y', strtotime($orderdate));
-			else
-			$ord_date = date('m/d/Y', strtotime($orderdate));
-			$total_pay = $orderprice.' '.$currencycode;
-			$msgbody = Mage::getModel('sendinblue/sendinblue')->getSendSmsmOrderMessage();
-					$fname = str_replace('{first_name}', $firstname, $msgbody);
-					$lname = str_replace('{last_name}', $lastname."\r\n", $fname);
-					$procuct_price = str_replace('{order_price}', $total_pay, $lname);
-					$order_date = str_replace('{order_date}', $ord_date."\r\n", $procuct_price);
-					$msgbody = str_replace('{order_reference}', $ref_num, $order_date);
-			
-			$arr = array();
-			$arr['to'] = $mobile;
-			$arr['from'] = Mage::getModel('sendinblue/sendinblue')->getSendSmsOrderSubject();
-			$arr['text'] = $msgbody;
-			$responce = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);			
-		}
-	
-	}
 	public function subscribedToNewsletter($observer)
     {
 	  $data = $observer->subscriber;

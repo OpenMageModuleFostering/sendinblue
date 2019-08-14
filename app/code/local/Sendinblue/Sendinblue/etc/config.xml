@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Sendinblue_Sendinblue>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
             <platform>ce</platform>
         </Sendinblue_Sendinblue>
     </modules>
