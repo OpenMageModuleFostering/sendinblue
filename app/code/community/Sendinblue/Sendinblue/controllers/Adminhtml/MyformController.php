@@ -315,7 +315,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                         $sendinSwitch->saveConfig('sendinblue/smtp/port', $smtpResponse['data']['relay_data']['data']['port'], 'default', 0);
                         $sendinSwitch->saveConfig('sendinblue/smtp/ssl', 'null', 'default', 0);
                         $sendinSwitch->saveConfig('sendinblue/smtp/option', 'smtp', 'default', 0);
-                        if ($requestParameter['email']) {
+                        if (!empty($requestParameter['email'])) {
                             $responceSendTestMail =  $sendinModule->sendTestMail($requestParameter['email']);
                             $responceSendTestData = json_decode($responceSendTestMail, true);   
 

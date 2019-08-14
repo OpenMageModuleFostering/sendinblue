@@ -25,8 +25,8 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
         $getEnableStatus = $sendinblueData->getEnableStatus();  
         $getTrackingStatus = $sendinblueData->getTrackingStatus();
         $getOrderStatus = $sendinblueData->getOrderSmsStatus();
-        $getUserLists = $sendinblueData->getUserlists();
-        $smtpData = $sendinblueData->trackingSmtp();
+        $sibLists = $sendinblueData->getUserlists();
+        $getUserLists = !empty($sibLists) ? $sibLists : '';
 
         $attributesName = $sendinblueData->allAttributesName();
         $afterArrayMerge = array();
@@ -38,24 +38,28 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
         $orderData = $order->getData();
         $custmerData = $customer->getData();
         $localeCode = Mage::app()->getLocale()->getLocaleCode();
+        $referenceNumber = !empty($orderData['increment_id']) ? $orderData['increment_id'] : '';
+        $orderprice = !empty($orderData['grand_total']) ? $orderData['grand_total'] : '';
+        $currencyCode = !empty($orderData['base_currency_code']) ? $orderData['base_currency_code'] : '';
 
         if($getEnableStatus && $getOrderStatus) {
             if (!empty($dataDisplay['telephone']) && !empty($dataDisplay['country_id'])) {
                 $countryCode = $sendinblueData->getCountryCode($dataDisplay['country_id']);                 
-                $dataDisplay['telephone'] = $sendinblueData->checkMobileNumber($dataDisplay['telephone'],$countryCode);
+                $smsMobile = $sendinblueData->checkMobileNumber($dataDisplay['telephone'], $countryCode);
             }
-            $referenceNumber = $orderData['increment_id'];
-            $orderprice = $orderData['grand_total'];
-            $currencyCode = $orderData['base_currency_code'];
+            $ordCreateDate = !empty($orderData['created_at']) ? $orderData['created_at'] : '';
             if ($localeCode == 'fr_FR') {
-                $orderCreatedDate = date('d/m/Y', strtotime($orderData['created_at']));
+                $orderCreatedDate = date('d/m/Y', strtotime($ordCreateDate));
             }
             else {
-                $orderCreatedDate = date('m/d/Y', strtotime($orderData['created_at']));
+                $orderCreatedDate = date('m/d/Y', strtotime($ordCreateDate));
             }
 
             $totalPay = $orderprice.' '.$currencyCode;
-            $msgbody = $sendinblueData->getSendSmsmOrderMessage();
+            $senderOfMsg = $sendinblueData->getSendSmsOrderSubject();
+            $senderData = !empty($senderOfMsg) ? $senderOfMsg : '';
+            $msgbodyData = $sendinblueData->getSendSmsmOrderMessage();
+            $msgbody = !empty($msgbodyData) ? $msgbodyData : '';
             $firstName = str_replace('{first_name}', $dataDisplay['firstname'], $msgbody);
             $lastName = str_replace('{last_name}', $dataDisplay['lastname']."\r\n", $firstName);
             $procuctPrice = str_replace('{order_price}', $totalPay, $lastName);
@@ -63,21 +67,23 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
             $msgbody = str_replace('{order_reference}', $referenceNumber, $orderDate);
 
             $sendSmsData = array();
-            $sendSmsData['to'] = $dataDisplay['telephone'];
-            $sendSmsData['from'] = $sendinblueData->getSendSmsOrderSubject();
+            $sendSmsData['to'] = $smsMobile;
+            $sendSmsData['from'] = $senderData;
             $sendSmsData['text'] = $msgbody;
-            $responce = $sendinblueData->sendSmsApi($sendSmsData);
+            if (!empty($senderData) && !empty($msgbody) && !empty($smsMobile)) {
+                $sendinblueData->sendSmsApi($sendSmsData);
+            }
         }
         $allData = array_merge($dataDisplay, $custmerData);
         $afterArrayMerge = $sendinblueData->mergeMyArray($attributesName, $allData);
         $client = (!empty($custmerData['firstname'])|| !empty($custmerData['firstname'])) ? 1 : 0 ;
         
         $afterArrayMerge['CLIENT'] = $client;
-        $email = $custmerData['email']; // for email address
+        $email = !empty($custmerData['email']) ? $custmerData['email'] : ''; // for email address
         $costomerInformation = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
         $nlStatus = $costomerInformation->getStatus();
 
-        if ($nlStatus == 1) {
+        if ($nlStatus == 1 && !empty($email)) {
             $sendinblueData->emailAdd($email, $afterArrayMerge, $nlStatus);
         }
 
@@ -91,8 +97,11 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
             }
                       
             $getUserLists = array($getUserLists);
-            $attributesValues = array("PRENOM" => $custmerData['firstname'], "NOM" => $custmerData['lastname'], "ORDER_ID" => $referenceNumber, "ORDER_DATE" => $date, "ORDER_PRICE" => $orderprice);
+            $fName = !empty($custmerData['firstname']) ? $custmerData['firstname'] : '';
+            $lName = !empty($custmerData['lastname']) ? $custmerData['lastname'] : '';
+            $attributesValues = array("PRENOM" => $fName, "NOM" => $lName, "ORDER_ID" => $referenceNumber, "ORDER_DATE" => $date, "ORDER_PRICE" => $orderprice);
             $sendinblueData->importTransactionalData($email, $attributesValues, $getUserLists);
+
         }                
     }
 }

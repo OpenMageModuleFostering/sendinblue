@@ -105,7 +105,7 @@ class Sendinblue_Sendinblue_Model_Observer
         }
 
         $email = $customerData['email'];
-        $costomerEntityId = isset($customerData['entity_id'])?$customerData['entity_id']:'';        
+        $costomerEntityId = isset($customerData['entity_id']) ? $customerData['entity_id'] : '';        
         $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('country_id')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',$costomerEntityId);
 
         $telephone = '';
@@ -116,6 +116,7 @@ class Sendinblue_Sendinblue_Model_Observer
             if (!empty($customerAddress['telephone'])) {
                 if(!empty($customerAddress['country_id'])) {
                     $countryCode = $sendinModule->getCountryCode($customerAddress['country_id']);
+                    $countryCode = !empty($countryCode) ? $countryCode : '';
                     $customerAddress['telephone'] = $sendinModule->checkMobileNumber($customerAddress['telephone'], $countryCode);
                 }
             }
@@ -162,7 +163,7 @@ class Sendinblue_Sendinblue_Model_Observer
         $order = $observer->getEvent()->getOrder();
         if ($order->getState() == Mage_Sales_Model_Order::STATE_PROCESSING) {
             $history = $order->getShipmentsCollection();
-            $shipmentHistoryData=$history->toarray();
+            $shipmentHistoryData = $history->toarray();
             if($shipmentHistoryData['totalRecords'] > 0) {
                 $orderId = isset($shipmentHistoryData['items']['0']['order_id']) ? $shipmentHistoryData['items']['0']['order_id'] : '';
                 $shippingaddrid = isset($shipmentHistoryData['items']['0']['shipping_address_id']) ? $shipmentHistoryData['items']['0']['shipping_address_id'] : '';
@@ -182,10 +183,10 @@ class Sendinblue_Sendinblue_Model_Observer
                 $stmtCountryCode = $readDbObject->query($queryCountryCode);
                 $data = $stmtCountryCode->fetch();
                 $mobile = '';
-                $countryPrefix = $data['country_prefix'];
+                $countryPrefix = !empty($data['country_prefix']) ? $data['country_prefix'] : '';
                 $sendinblueModule = Mage::getModel('sendinblue/sendinblue');
                 if(isset($countryPrefix) && !empty($countryPrefix)){ 
-                    $mobile = $sendinblueModule->checkMobileNumber($mobileSms,$countryPrefix);
+                    $mobile = $sendinblueModule->checkMobileNumber($mobileSms, $countryPrefix);
                 }
                 $firstname = $_shippingAddress->getFirstname();
                 $firstname = !empty($firstname ) ? $firstname : '';
@@ -209,12 +210,16 @@ class Sendinblue_Sendinblue_Model_Observer
                 $procuctPrice = str_replace('{order_price}', $totalPay, $lname);
                 $orderDate = str_replace('{order_date}', $ordDate."\r\n", $procuctPrice);
                 $messageBody = str_replace('{order_reference}', $refNum, $orderDate);
+                $senderShipmentValue = $sendinblueModule->getSendSmsShipingSubject();
+                $senderShipment = !empty($senderShipmentValue) ? $senderShipmentValue : '';
 
                 $smsInformation = array();
                 $smsInformation['to'] = $mobile;
-                $smsInformation['from'] = $sendinblueModule->getSendSmsShipingSubject();
+                $smsInformation['from'] = $senderShipment;
                 $smsInformation['text'] = $messageBody;
-                $sendinblueModule->sendSmsApi($smsInformation);
+                if (!empty($senderShipment) && !empty($messageBody) !empty($mobile)) {
+                    $sendinblueModule->sendSmsApi($smsInformation);
+                }
             }
         }
     }

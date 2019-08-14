@@ -281,8 +281,8 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
             }
             else {
                 $sendinSwitch = Mage::getModel('core/config');
-                $getKey   = $sendinModule->getApiKey();
-                $apiKeyStatus    = $sendinModule->checkApikey($getKey);
+                $getKey = $sendinModule->getApiKey();
+                $apiKeyStatus = $sendinModule->checkApikey($getKey);
                 if (empty($apiKeyStatus['error'])) {
                     $sendinSwitch->saveConfig('sendinblue/smtp/status', $postData['smtptest']);
                     $smtpResponse = $sendinModule->trackingSmtp(); // get tracking code
