@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <layout>
-    <sendinblue_admin_adminhtml_myform_index>
+    <adminhtml_myform_index>
         <reference name="head">
             <action method="addItem"><type>skin_css</type><name>sendinblue/css/styles.css</name><params/></action>
             <action method="addItem"><type>skin_css</type><name>sendinblue/css/jquery.multiselect.css</name><params/></action>
@@ -8,5 +8,5 @@
         <reference name="content">
             <block type="adminhtml/template"  name="sendinblue" template="sendinblue/myform.phtml"/>
         </reference>
-    </sendinblue_admin_adminhtml_myform_index>
+    </adminhtml_myform_index>
 </layout>

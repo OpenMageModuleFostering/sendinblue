@@ -650,14 +650,15 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     /**
     * This method is used used for check api status
     */
-    public function checkApikey()
+    public function checkApikey($userApiKey)
     {
-        $params['api_key'] = $this->apiKey;
+        $params['api_key'] = (!empty($userApiKey)) ? $userApiKey : $this->apiKey;
         $psmailinObj = Mage::getModel('sendinblue/psmailin',$params);
         $keyResponse = $psmailinObj->getAccount();      
 
         if (isset($keyResponse['code']) && $keyResponse['code'] == 'failure' && isset($keyResponse['message']) && $keyResponse['message'] == 'Key Not Found In Database') {
-            return $lists['error'] = $keyResponse['message'];
+            $lists['error'] = $keyResponse['message'];
+            return $lists;
         }
     }
 
@@ -798,7 +799,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         if($apiKey == '') {
             return false;
         }
-        $apiKeyResponse = $this->checkApikey(); // check api key is valid or not
+        $apiKeyResponse = $this->checkApikey($apiKey); // check api key is valid or not
         if($this->moduleEnable != 1 && $apiKey == '' && $apiKeyResponse['error'] != '' && $this->getSyncronizeStatus()) {
                 return false;
         }
@@ -1462,7 +1463,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 
             $pathResponce = '';
             $emailUser = base64_encode($to);
-            $pathResponce = Mage::getBaseUrl().'sendinblue/ajax/mailResponce?value='.base64_encode($to);                
+            $pathResponce = Mage::getBaseUrl().'admin/ajax/mailResponce?value='.base64_encode($to);                
             if ($sendinConfirmType == 'doubleoptin' && $doubleoptinTemplateId == '') {      
                 return $this->defaultDoubleoptinTemp($to, $pathResponce);
             }
@@ -1562,7 +1563,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             if($sendinFinalConfirmEmail == 'yes') {
                 $getFinalTemplateId = $this->getFinalTemplate();
                 if($getFinalTemplateId <= 0 || empty($getFinalTemplateId)) {
-                    $doubleoptinUrl = $this->getSendinDoubleoptinRedirectUrl();	
+                    $doubleoptinUrl = $this->getSendinDoubleoptinRedirectUrl();
                 }
             }
             else {

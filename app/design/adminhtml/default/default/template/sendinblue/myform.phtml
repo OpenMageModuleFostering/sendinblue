@@ -320,7 +320,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                             </tr></form>
                              <?php } ?>
                             <tr><td colspan="2">
-                        <?php echo $this->__('To synchronize the emails of your customers from SendinBlue platform to your e-commerce website, you should run '); ?><a href="<?php echo Mage::helper("adminhtml")->getUrl("sendinblue/adminhtml_sync/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a><?php echo $this->__('each day'); ?><span class="toolTip" title="<?php echo $this->__('Note that if you change the name of your Shop (currently ');?><?php echo ucfirst(Mage::app()->getFrontController()->getRequest()->getModuleName());?><?php echo $this->__(') the token value changes.'); ?>">&nbsp;</span>
+                        <?php echo $this->__('To synchronize the emails of your customers from SendinBlue platform to your e-commerce website, you should run '); ?><a href="<?php echo Mage::helper("adminhtml")->getUrl("adminhtml/sync/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a><?php echo $this->__('each day'); ?><span class="toolTip" title="<?php echo $this->__('Note that if you change the name of your Shop (currently ');?><?php echo ucfirst(Mage::app()->getFrontController()->getRequest()->getModuleName());?><?php echo $this->__(') the token value changes.'); ?>">&nbsp;</span>
                         </td></tr>
                             </table>
                         </div>
@@ -341,7 +341,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
     <div class="sendin_row alldiv" <?php echo $style; ?>  >
         <form id="edit_formsmtp" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/sendmail'); ?>">
         <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" /> 
-            <input name="smtpUrl" type="hidden" id="smtpUrl" value="<?php echo $this->getUrl('sendinblue/ajax/smtppost'); ?>" />    
+            <input name="smtpUrl" type="hidden" id="smtpUrl" value="<?php echo $this->getUrl('adminhtml/ajax/smtppost'); ?>" />    
             <div class="section-config active">
                 <fieldset class="fields">
                     <legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Activate SendinBlue SMTP for your transactional emails'); ?></legend>
@@ -371,7 +371,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
 
     <div class="sendin_row alldiv" <?php echo $style; ?> >
         <div class="section-config active">       
-                <input name="trackingUrl" type="hidden" id="trackingUrl" value="<?php echo $this->getUrl('sendinblue/ajax/codepost'); ?>" />          
+                <input name="trackingUrl" type="hidden" id="trackingUrl" value="<?php echo $this->getUrl('adminhtml/ajax/codepost'); ?>" />          
                 <fieldset id="my-fieldset" class="fields">
                     <legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Code tracking'); ?> </legend>
                     <table cellspacing="0" class="form-list">
@@ -393,7 +393,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                         <tr <?php echo $style_track; ?> class='ordertracking'>
                             <td>&nbsp;</td>
                             <input type="hidden" name="history_status" value="<?php echo $trackingHistory; ?>" id="history_status">
-                            <input name="importordertrackingUrl" type="hidden" id="importordertrackingUrl" value="<?php echo $this->getUrl('sendinblue/ajax/orderhistory'); ?>" />
+                            <input name="importordertrackingUrl" type="hidden" id="importordertrackingUrl" value="<?php echo $this->getUrl('adminhtml/ajax/orderhistory'); ?>" />
                             <td class="input-ele"><label style="text-align:left;"><a href="javascript:void(0);" class="Trackhistory button btn" style="color: #000000; outline: 0 none; text-decoration: none; font-weight: normal;"><?php echo $this->__('Import the data of previous orders'); ?></a></label></td>
                         </tr>
                         <?php } ?>
@@ -429,7 +429,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                <?php echo $this->__('Yes'); ?>
                <input name="sms_credit" <?php if($notifySmsStatus == 0) { echo 'checked'; } ?> type="radio" value="0" class="sms_credit radio_spaceing2" style="margin-left:20px;margin-right:10px;" />
                <?php echo $this->__('No'); ?>
-               <input name="credit" type="hidden" id="credits" value="<?php echo $this->getUrl('sendinblue/ajax/credit'); ?>" />
+               <input name="credit" type="hidden" id="credits" value="<?php echo $this->getUrl('adminhtml/ajax/credit'); ?>" />
                <div class="hideCredit" id="div_email_test" style="padding-top:20px;">
                   <form action="<?php echo $this->getUrl('*/*/sendnotifysms'); ?>"  method="POST" name="notify_sms_mail_form">
                    <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />  
@@ -440,7 +440,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                         <input name="sendin_notify_value" id="sendin_notify_value" type="text" class="input-text" value="<?php echo $sendinModule->getNotifyValueStatus(); ?>" size="40" /><span class="toolTip" title="<?php echo $this->__('Alert threshold for remaining credits'); ?>">&nbsp;</span>
                      </p>
                      <p class="form-data" style="width:705px"><input name="notify_sms_mail" type="submit" value="<?php echo $this->__('Save'); ?>"  onclick="return validate('<?php echo $this->__('Please provide valid Email!') ;?>','<?php echo $this->__('Please provide a limit in integer format') ; ?>');" class="button btn" style=" float:right;"/></p>
-                     <p class="mrgin-left" style="float:left;"><?php echo $this->__('To get the email notification, you should run '); ?> <a href="<?php echo Mage::helper("adminhtml")->getUrl("sendinblue/adminhtml_notify/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a> <?php echo $this->__(' atleast one time per day. '); ?>
+                     <p class="mrgin-left" style="float:left;"><?php echo $this->__('To get the email notification, you should run '); ?> <a href="<?php echo Mage::helper("adminhtml")->getUrl("adminhtml/notify/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a> <?php echo $this->__(' atleast one time per day. '); ?>
                         <span class="toolTip" title="<?php echo $this->__('Note that if you change the name of your Shop (currently ');?><?php echo ucfirst(Mage::app()->getFrontController()->getRequest()->getModuleName());?><?php echo $this->__(') the token value changes.'); ?>">&nbsp;</span>
                      </p>
                   </form>
@@ -464,7 +464,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                      <div id="tab1" class="tab_content" style="display: block;">
                         <div class="wrapper" style="margin-top:15px;">
                            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-list3 ">
-                                 <input name="order" type="hidden" id="order" value="<?php echo $this->getUrl('sendinblue/ajax/order'); ?>" />
+                                 <input name="order" type="hidden" id="order" value="<?php echo $this->getUrl('adminhtml/ajax/order'); ?>" />
                               <tr>
                                  <td class="row1 fix_width2" >
                                     <label class="r_label">
@@ -549,7 +549,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                      <div id="tab2" class="tab_content">
                         <div class="wrapper"  style="margin-top:15px;">
                            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-list3">
-                               <input name="shiping" type="hidden" id="shiping" value="<?php echo $this->getUrl('sendinblue/ajax/shiping'); ?>" />
+                               <input name="shiping" type="hidden" id="shiping" value="<?php echo $this->getUrl('adminhtml/ajax/shiping'); ?>" />
                               <tr>
                                  <td class="row1 fix-width2">
                                     <label class="r_label">
@@ -633,7 +633,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                      <div id="tab3" class="tab_content">
                         <div class="wrapper" style="margin-top:15px;">
                            <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-list3">
-                               <input name="campaign" type="hidden" id="campaign" value="<?php echo $this->getUrl('sendinblue/ajax/campaign'); ?>" />         
+                               <input name="campaign" type="hidden" id="campaign" value="<?php echo $this->getUrl('adminhtml/ajax/campaign'); ?>" />         
                               <tr>
                                  <td class="row1 fix_width2">
                                     <label class="r_label"><?php echo $this->__('Send a campaign SMS'); ?></label>
@@ -764,12 +764,12 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
     <fieldset id="my-fieldset" class="fields">
         <legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Contacts list'); ?> </legend>
 
-        <input name="ajaxcontentUrl" type="hidden" id="ajaxcontentUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxcontent'); ?>" />
-        <input name="ajaxUrl" type="hidden" id="ajaxUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxupdate'); ?>" />
-        <input name="ajaxOrderSmsUrl" type="hidden" id="ajaxOrderSmsUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxordersms'); ?>" />
-        <input name="ajaxOrderShippedUrl" type="hidden" id="ajaxOrderShippedUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxordershipped'); ?>" />
-        <input name="ajaxSmsCampaignUrl" type="hidden" id="ajaxSmsCampaignUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxsmscampaign'); ?>" />
-        <input name="ajaxSmsSubscribeUrl" type="hidden" id="ajaxSmsSubscribeUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxsmssubscribe'); ?>" />
+        <input name="ajaxcontentUrl" type="hidden" id="ajaxcontentUrl" value="<?php echo $this->getUrl('adminhtml/ajax/ajaxcontent'); ?>" />
+        <input name="ajaxUrl" type="hidden" id="ajaxUrl" value="<?php echo $this->getUrl('adminhtml/ajax/ajaxupdate'); ?>" />
+        <input name="ajaxOrderSmsUrl" type="hidden" id="ajaxOrderSmsUrl" value="<?php echo $this->getUrl('adminhtml/ajax/ajaxordersms'); ?>" />
+        <input name="ajaxOrderShippedUrl" type="hidden" id="ajaxOrderShippedUrl" value="<?php echo $this->getUrl('adminhtml/ajax/ajaxordershipped'); ?>" />
+        <input name="ajaxSmsCampaignUrl" type="hidden" id="ajaxSmsCampaignUrl" value="<?php echo $this->getUrl('adminhtml/ajax/ajaxsmscampaign'); ?>" />
+        <input name="ajaxSmsSubscribeUrl" type="hidden" id="ajaxSmsSubscribeUrl" value="<?php echo $this->getUrl('adminhtml/ajax/ajaxsmssubscribe'); ?>" />
         <input type="hidden" name="pagenumber" id="pagenumber" value="1" /> 
         <div id="userGrid">
             <div class="grid">

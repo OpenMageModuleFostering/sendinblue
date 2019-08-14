@@ -121,14 +121,11 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
             }
             else if (!empty($requestParameter['sendin_apikey'])) {
                 $sendinSwitch = Mage::getModel('core/config');
-                $apiKeyStatus = $sendinModule->checkApikey();
+                $apiKeyStatus = $sendinModule->checkApikey($requestParameter['sendin_apikey']);
                 if (empty($apiKeyStatus['error'])) {
                     $getKey = $sendinModule->getApiKey();
-                    if ($getKey == '') {
+                    if ($getKey == '' || $getKey != $requestParameter['sendin_apikey']) {
                         $sendinModule->createFolderName($requestParameter['sendin_apikey']);
-                    }
-                    elseif ($getKey != $requestParameter['sendin_apikey']) {
-                        $sendinModule->createFolderName($requestParameter['sendin_apikey']);    
                     }
 
                     $sendinSwitch->saveConfig('sendinblue/api', trim($requestParameter['sendin_apikey']));

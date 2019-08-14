@@ -8,7 +8,7 @@
 * needs then we can't provide a technical support.
 **/
 
-class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Action
+class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controller_Front_Action
 {
     public function indexAction()
     {
