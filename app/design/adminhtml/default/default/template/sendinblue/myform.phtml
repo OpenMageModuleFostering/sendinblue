@@ -63,19 +63,20 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
             </fieldset>
         </div>
         <?php
-        $sendinModule = Mage::getModel('sendinblue/sendinblue');
-        $sendinStatus = $sendinModule->getEnableStatus();
-        $moduleStatus = isset($sendinStatus) ? 1 : 0; 
+        $viewData = array();
+        $viewData = Mage::registry('viewData');
+        $sendinStatus = $viewData['sendinStatus'];
+        $moduleStatus = isset($sendinStatus) ? 1 : 0;
         $style = ($moduleStatus) ? '' : 'style="display:none;"';
-        $apiKey = $sendinModule->getApiKey(); 
-        $getSyncronize = $sendinModule->getSyncronizeStatus();
-        $trackStatus = $sendinModule->getTrackingStatus();
-        $trackingHistory = $sendinModule->getTrackingHistoryStatus();
-        $notifySmsStatus = $sendinModule->getNotifySmsStatus();
-        $orderSmsStatus = $sendinModule->getOrderSmsStatus();
-        $campaignStatus = $sendinModule->getCampaignStatus();
-        $shipingSmsStatus = $sendinModule->getShipingSmsStatus();
-        $formKey = Mage::getSingleton('core/session')->getFormKey();
+        $apiKey = $viewData['apiKey'];
+        $getSyncronize = $viewData['getSyncronize'];
+        $trackStatus = $viewData['trackStatus'];
+        $trackingHistory = $viewData['trackingHistory'];
+        $notifySmsStatus = $viewData['notifySmsStatus'];
+        $orderSmsStatus = $viewData['orderSmsStatus'];
+        $campaignStatus = $viewData['campaignStatus'];
+        $shipingSmsStatus = $viewData['shipingSmsStatus'];
+        $formKey = $viewData['formKey'];
         ?>
         <div class="sendin_row">
             <fieldset class="fields">
@@ -147,8 +148,8 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                 <tr>
                                     <td><label><?php echo $this->__('Your Lists'); ?></label></td>
                                     <td class="input-ele"><?php
-                                     $list = $sendinModule->lists();                                     
-                                     $selectedlist = $sendinModule->getUserlists();              
+                                     $list = $viewData['list'];
+                                     $selectedlist = $viewData['selectedlist'];
                                      if($selectedlist!=NULL){
                                             $list_array = explode('|',$selectedlist);
                                         }
@@ -172,7 +173,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                     <div class="col-md-6 left-wrapper radio_group_option">
                                         <div class="form-group manage_subscribe_block">
                                             <div>
-                                              <input type="radio" value="nocon" <?php if(Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType') == 'nocon') echo 'checked="checked"'; ?> name="subscribe_confirm_type" id="no_follow_email">
+                                              <input type="radio" value="nocon" <?php if(isset($viewData['sendinSubscribeConfirmType']) && $viewData['sendinSubscribeConfirmType'] == 'nocon') echo 'checked="checked"'; ?> name="subscribe_confirm_type" id="no_follow_email">
                                               <label for="no_follow_email" class="radio-label"> <?php echo $this->__('No confirmation'); ?></label>
                                             </div>
                                             <div class="clearfix"></div>
@@ -182,7 +183,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                         </div>
                                         <div class="form-group manage_subscribe_block">
                                             <div class="col-md-10">
-                                              <input type="radio" value="simplemail" <?php if(Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType') == 'simplemail') echo 'checked="checked"'; ?> id="follow_mail" name="subscribe_confirm_type">
+                                              <input type="radio" value="simplemail" <?php if(isset($viewData['sendinSubscribeConfirmType']) && $viewData['sendinSubscribeConfirmType'] == 'simplemail') echo 'checked="checked"'; ?> id="follow_mail" name="subscribe_confirm_type">
                                               <label for="follow_mail" class="radio-label"> <?php echo $this->__('Simple confirmation'); ?></label><span title="<?php echo $this->__('This confirmation email is one of your SMTP templates. By default, we have created a Default Template - Single Confirmation. You can create and activate your SMTP templates by clicking here'); ?>" class="toolTip">
                                             </span>
                                             </div>
@@ -194,12 +195,12 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                     <div class="listData ver_5 managesubscribeBlock">
                                                         <select class="ui-state-default" name="template_simple"><option value=""><?php echo $this->__('Select Template'); ?></option>
                                                             <?php
-                                                            $templatelist = $sendinModule->templateDisplay();
+                                                            $templatelist = $viewData['templatelist'];
                                                             if (!empty($templatelist['data']['campaign_records'])) {
                                                                 foreach ($templatelist['data']['campaign_records'] as $template_data) { 
                                                                     if ($template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], 'DOUBLEOPTIN') === false) { ?>                        
 
-                                                                        <option value="<?php echo $template_data['id']; ?>" <?php if($template_data['id'] == Mage::getStoreConfig('sendinblue/SendinTemplateId')) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>             
+                                                                        <option value="<?php echo $template_data['id']; ?>" <?php if(isset($viewData['sendinTemplateId']) && $template_data['id'] == $viewData['sendinTemplateId']) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>             
                                                             <?php 
                                                                     }
                                                                 }
@@ -217,7 +218,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                             <div class="clearfix"></div>
                                             <div class="form-group manage_subscribe_block">
                                             <div class="col-md-10">
-                                                <input type="radio" value="doubleoptin" <?php if(Mage::getStoreConfig('sendinblue/SendinSubscribeConfirmType') == 'doubleoptin') echo 'checked="checked"'; ?> id="double_optin" name="subscribe_confirm_type">
+                                                <input type="radio" value="doubleoptin" <?php if(isset($viewData['sendinSubscribeConfirmType']) && $viewData['sendinSubscribeConfirmType'] == 'doubleoptin') echo 'checked="checked"'; ?> id="double_optin" name="subscribe_confirm_type">
                                                 <label for="double_optin" class="radio-label"> <?php echo $this->__('Double opt-in confirmation'); ?></label>
                                                 <span title="<?php echo $this->__("If you select the Double Opt-in confirmation, subscribers will receive an email inviting them to confirm their subscription.Contact will be saved in the 'FORM' folder, on the 'Temp - DOUBLE OPT-IN' list. After confirmation, the contact will be saved in the 'Corresponding List' selected below."); ?>" class="toolTip">
                                                 </span>
@@ -230,13 +231,12 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                 <select  class="ui-state-default" name="doubleoptin_template_id">
                                                     <option value=""><?php echo $this->__('Select Template'); ?></option>
                                                     <?php
-                                                    $templatelist = $sendinModule->templateDisplay();
-
+                                                    $templatelist = $viewData['templatelist'];
                                                     if (!empty($templatelist['data']['campaign_records'])) {
                                                         foreach ($templatelist['data']['campaign_records'] as $template_data) { 
                                                             if ($template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], '[DOUBLEOPTIN]')) { 
                                                     ?>                        
-                                                    <option value="<?php echo $template_data['id']; ?>" <?php if($template_data['id'] == Mage::getStoreConfig('sendinblue/SendinDoubleoptinTemplateId')) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>                  
+                                                    <option value="<?php echo $template_data['id']; ?>" <?php if(isset($viewData['sendinDoubleoptinTemplateId']) && $template_data['id'] == $viewData['sendinDoubleoptinTemplateId']) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>                  
                                                     <?php   
                                                             }
                                                         }
@@ -247,14 +247,14 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                         <!-- Redirect URL after click on the validation email -->
                                         <div class="clearfix"></div>
                                         <div id="doubleoptin-redirect-url-area" class="form-group clearfix"> 
-                                            <input type="checkbox" class="openCollapse" <?php if(Mage::getStoreConfig('sendinblue/SendinOptinRedirectUrlCheck') == 'yes') echo 'checked="checked"'; ?> value="yes" name="optin_redirect_url_check" id="doptin_redirect_span_icon">
+                                            <input type="checkbox" class="openCollapse" <?php if(isset($viewData['sendinOptinRedirectUrlCheck']) && $viewData['sendinOptinRedirectUrlCheck'] == 'yes') echo 'checked="checked"'; ?> value="yes" name="optin_redirect_url_check" id="doptin_redirect_span_icon">
                                             <a href=""> <?php echo $this->__('Redirect URL after clicking in the validation email'); ?> </a> 
                                             <!-- <label style="margin-bottom: 5px;"></label> -->
                                     
                                         <div id="mail-doubleoptin-redirect" class="collapse">
                                         <p style="width: 90%;text-align: justify;text-justify: inter-word;">       
                                         <?php echo $this->__('Redirect your contacts to a landing page or to your website once they have clicked on the confirmation link in the email.'); ?></p>
-                                        <input type="url" style="margin-bottom:10px;width:370px" value="<?php echo Mage::getStoreConfig('sendinblue/SendinDoubleoptinRedirectUrl'); ?>" placeholder="http://your-domain.com" class="form-control" name="doubleoptin-redirect-url" id="doubleoptin-redirect-url">
+                                        <input type="url" style="margin-bottom:10px;width:370px" value="<?php echo $viewData['sendinDoubleoptinRedirectUrl']; ?>" placeholder="http://your-domain.com" class="form-control" name="doubleoptin-redirect-url" id="doubleoptin-redirect-url">
                                         <div class="clearfix"></div>
                                         <div class="pull-left" id="doubleoptin-redirect-message"> </div>
                                         <div class="clearfix"></div>
@@ -264,7 +264,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                     <!-- Send a final confirmation email -->
                                     <div class="clearfix"></div>
                                     <div id="doubleoptin-final-confirmation-area" class="form-group clearfix"> 
-                                        <input type="checkbox" class="openCollapse" <?php if(Mage::getStoreConfig('sendinblue/SendinFinalConfirmEmail') == 'yes') echo 'checked="checked"'; ?> value="yes" name="final_confirm_email" id="doptin_final_confirm_email">
+                                        <input type="checkbox" class="openCollapse" <?php if(isset($viewData['sendinFinalConfirmEmail']) && $viewData['sendinFinalConfirmEmail'] == 'yes') echo 'checked="checked"'; ?> value="yes" name="final_confirm_email" id="doptin_final_confirm_email">
                                         <a href="#doubleoptin-final-confirm"> <?php echo $this->__('Send a final confirmation email'); ?> </a>
                                         <div id="doubleoptin-final-confirm" class="collapse">
                                         <p><?php echo $this->__('Once a contact has clicked in the double opt-in confirmation email, send them a final confirmation email'); ?></p>
@@ -272,13 +272,12 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                         <select  class="ui-state-default" name="template_final">
                                             <option value=""><?php echo $this->__('Select Template'); ?></option>
                                             <?php
-                                            $templatelist = $sendinModule->templateDisplay();
-
+                                            $templatelist = $viewData['templatelist'];
                                             if (!empty($templatelist['data']['campaign_records'])) {
                                                 foreach ($templatelist['data']['campaign_records'] as $template_data) { 
                                                     if ($template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], 'DOUBLEOPTIN') === false) { 
                                             ?>                        
-                                                    <option value="<?php echo $template_data['id']; ?>" <?php if($template_data['id'] == Mage::getStoreConfig('sendinblue/SendinTemplateFinal')) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>                  
+                                                    <option value="<?php echo $template_data['id']; ?>" <?php if(isset($viewData['sendinTemplateFinal']) && $template_data['id'] == $viewData['sendinTemplateFinal']) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>                  
                                             <?php   
                                                     }
                                                 }
@@ -307,8 +306,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                 </td>
                             </tr>
                             </form>
-                            
-                            <?php if($sendinModule->getImportOldSubsStatus()==1){ ?>
+                            <?php if(isset($viewData['importOldSubsStatus']) && $viewData['importOldSubsStatus'] == 1){ ?>
                             <form id="reimport_form" name="reimport_form" method="post" action="<?php echo $this->getUrl('*/*/reimportpost'); ?>">
                             <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" /> 
                             <tr>
@@ -333,7 +331,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
     <?php 
     }
 
-    $moduleStatus = $sendinModule->getSmtpStatus();
+    $moduleStatus = $viewData['moduleStatus'];
     $styleSmtp = ($moduleStatus == 0) ? 'style="display:none;"' : '' ;
 
     ?>
@@ -413,9 +411,10 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
             <td class="row1" colspan="2" style="border:none; padding-top:10px;">
                <span style="margin-bottom:10px; color:#333333;">
                    <?php echo $this->__('Currently you have '); ?>
-                   <?php $credit = $sendinModule->getSmsCredit(); 
-                                   $notify_value = $sendinModule->getNotifyValueStatus();
-                                   ?>
+                   <?php
+                         $credit = $viewData['credit'];
+                         $notify_value = $viewData['notifyValueStatus'];
+                   ?>
                    <?php if ($credit >= $notify_value){ ?> <strong style="color:#000000;"><?php echo $credit; ?></strong><?php } else {?><strong style="color:#F03D25;"><?php echo $credit; ?></strong><?php } ?>
                     
                     <?php echo $this->__(' credits sms. To buy more credits, please click'); ?>
@@ -434,10 +433,10 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                   <form action="<?php echo $this->getUrl('*/*/sendnotifysms'); ?>"  method="POST" name="notify_sms_mail_form">
                    <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />  
                      <p class="form-data"><label><?php echo $this->__('Email'); ?></label>
-                        <input name="sendin_notify_email" id="sendin_notify_email" type="text" class="input-text" value="<?php echo $sendinModule->getNotifyEmailStatus(); ?>" size="40" />
+                        <input name="sendin_notify_email" id="sendin_notify_email" type="text" class="input-text" value="<?php  echo $viewData['notifyEmailStatus']; ?>" size="40" />
                      </p>
                      <p class="form-data"> <label><?php echo $this->__('Limit'); ?></label>
-                        <input name="sendin_notify_value" id="sendin_notify_value" type="text" class="input-text" value="<?php echo $sendinModule->getNotifyValueStatus(); ?>" size="40" /><span class="toolTip" title="<?php echo $this->__('Alert threshold for remaining credits'); ?>">&nbsp;</span>
+                        <input name="sendin_notify_value" id="sendin_notify_value" type="text" class="input-text" value="<?php echo $viewData['notifyValueStatus']; ?>" size="40" /><span class="toolTip" title="<?php echo $this->__('Alert threshold for remaining credits'); ?>">&nbsp;</span>
                      </p>
                      <p class="form-data" style="width:705px"><input name="notify_sms_mail" type="submit" value="<?php echo $this->__('Save'); ?>"  onclick="return validate('<?php echo $this->__('Please provide valid Email!') ;?>','<?php echo $this->__('Please provide a limit in integer format') ; ?>');" class="button btn" style=" float:right;"/></p>
                      <p class="mrgin-left" style="float:left;"><?php echo $this->__('To get the email notification, you should run '); ?> <a href="<?php echo Mage::helper("adminhtml")->getUrl("adminhtml/notify/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a> <?php echo $this->__(' atleast one time per day. '); ?>
@@ -491,7 +490,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                                    <?php echo $this->__('Sender'); ?></label>
                                                             </td>
                                                             <td>
-                                                               <input name="sender_order"  id="sender_order" type="text" value="<?php echo $sendinModule->getSendSmsOrderSubject(); ?>" class="input_bx" autocomplete="off" />
+                                                               <input name="sender_order"  id="sender_order" type="text" value="<?php echo $viewData['sendSmsOrderSubject']; ?>" class="input_bx" autocomplete="off" />
                                                                <span class="toolTip" title="<?php echo $this->__('This field allows you to customize the SMS sender. The number of characters is limited to 11 alphanumeric characters. You can´t configure your Sender with a phone number.'); ?>">&nbsp;</span>
                                                                <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_order_text">11</span></em>
                                                                </div>
@@ -501,7 +500,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                          <tr>
                                                             <td valign="top"><label><?php echo $this->__('Message'); ?></label></td>
                                                             <td>
-                                                               <textarea name="sender_order_message" id="sender_order_message" cols="45" rows="5" class="textarea_bx"><?php echo $sendinModule->getSendSmsmOrderMessage(); ?></textarea>
+                                                               <textarea name="sender_order_message" id="sender_order_message" cols="45" rows="5" class="textarea_bx"><?php echo $viewData['sendSmsmOrderMessage']; ?></textarea>
                                                                <span class="toolTip" style="float:left; margin-top: 85px;" title="<?php echo $this->__(' Create the content of your SMS with the limit of 160-character.Beyond 160 characters, it will be counted as a second SMS. Thus, if you write SMS of 240 characters, it will be recorded using two SMS.'); ?>">&nbsp;</span>
                                                                <span style="float:left; line-height:16px; margin-bottom:15px; width:490px; clear:both;"><?php echo $this->__('Number of SMS used: '); ?><span id="sender_order_message_text_count">0</span>
                                                                <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?></em><span id="sender_order_message_text">160</span></div>
@@ -574,7 +573,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                          <tr>
                                                             <td class="fix_width2" valign="top"><label><?php echo $this->__('Sender'); ?></label></td>
                                                             <td>
-                                                               <input name="sender_shipment" maxlength="11" id="sender_shipment" type="text" value="<?php echo $sendinModule->getSendSmsShipingSubject(); ?>" class="input_bx" autocomplete="off" />
+                                                               <input name="sender_shipment" maxlength="11" id="sender_shipment" type="text" value="<?php echo $viewData['sendSmsShipingSubject']; ?>" class="input_bx" autocomplete="off" />
                                                                <span class="toolTip" title="<?php echo $this->__('This field allows you to customize the SMS sender. The number of characters is limited to 11 alphanumeric characters. You can´t configure your Sender with a phone number.'); ?>">&nbsp;</span>
                                                                <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_shipment_text">11</span></em>
                                                                </div>
@@ -584,7 +583,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                          <tr>
                                                             <td valign="top"><label><?php echo $this->__('Message'); ?></label></td>
                                                             <td>
-                                                               <textarea name="sender_shipment_message" id="sender_shipment_message" cols="45" rows="5" class="textarea_bx"><?php echo $sendinModule->getSendSmsShipingMessage(); ?></textarea>
+                                                               <textarea name="sender_shipment_message" id="sender_shipment_message" cols="45" rows="5" class="textarea_bx"><?php echo $viewData['sendSmsShipingMessage']; ?></textarea>
                                                                <span class="toolTip" style="float:left; margin-top: 85px;" title="<?php echo $this->__(' Create the content of your SMS with the limit of 160-character.Beyond 160 characters, it will be counted as a second SMS. Thus, if you write SMS of 240 characters, it will be recorded using two SMS.'); ?>">&nbsp;</span>
                                                                <span style="float:left; line-height:16px; margin-bottom:15px; width:470px; clear:both;"><?php echo $this->__('Number of SMS used: '); ?><span id="sender_shipment_message_text_count">0</span>
                                                                <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?></em><span id="sender_shipment_message_text">160</span></div>
@@ -774,9 +773,9 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
         <div id="userGrid">
             <div class="grid">
                 <div class="hor-scroll">
-                <?php echo $this->__('You have '); ?> <?php  echo $sendinModule->getNewsletterSubscribeCount(); ?>
-                <?php echo $this->__(' contacts subscribed and '); ?>
-                <?php echo $sendinModule->getNewsletterUnSubscribeCount(); ?> 
+                <?php echo $this->__('You have '); ?> <?php  echo $viewData['newsletterSubscribeCount']; ?>
+                <?php echo $this->__(' contacts subscribed and '); ?> 
+                <?php echo $viewData['newsletterUnSubscribeCount']; ?> 
                 <?php echo $this->__(' contacts unsubscribed from Magento.'); ?><span id="Spantextmore" >
                 <?php echo $this->__(' For more details,'); ?></span><span id="Spantextless" style="display: none;" >
                 <?php echo $this->__(' For less details,'); ?></span><b>

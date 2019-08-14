@@ -16,6 +16,133 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
         if (isset($params['sendin_apikey']) && $params['sendin_apikey'] != ''){
             $this->CreateFolderCaseTwo();
         }
+        $sendinModule = Mage::getModel('sendinblue/sendinblue');
+        $configDataObj = Mage::getModel('core/config_data')->getCollection()->addFieldToFilter('path', array('like' => '%sendinblue%'));
+        $sendinblueEnabledStatus = '';  
+        $apiKey = ''; 
+        $getSyncronize = '';
+        $trackStatus = '';
+        $trackingHistory = '';
+        $notifySmsStatus = '';
+        $orderSmsStatus = '';
+        $campaignStatus = '';
+        $shipingSmsStatus = ''; 
+        $sendinSubscribeConfirmType = '';
+        $sendinTemplateId = '';
+        $sendinDoubleoptinTemplateId = '';
+        $sendinOptinRedirectUrlCheck = '';
+        $sendinDoubleoptinRedirectUrl = '';
+        $sendinFinalConfirmEmail = '';
+        $sendinTemplateFinal = '';
+        $formKey = '';
+        $moduleStatus = '';
+        
+        foreach ($configDataObj as $configData) {
+            $sendinblueEnabled = $configData->getData();  
+            if(count($sendinblueEnabled) > 0) {
+                if($sendinblueEnabled['path'] == 'sendinblue/enabled') {
+                    $sendinblueEnabledStatus = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/api') {
+                    $apiKey = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/syncronize') {
+                    $getSyncronize = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/tracking/code') {
+                    $trackStatus = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/improt/history') {
+                    $trackingHistory = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/sms/credit') {
+                    $notifySmsStatus = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/sms/order') {
+                    $orderSmsStatus = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/sms/campaign') {
+                    $campaignStatus = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/sms/shiping') {
+                    $shipingSmsStatus = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinSubscribeConfirmType') {
+                    $sendinSubscribeConfirmType = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinTemplateId') {
+                    $sendinTemplateId = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinDoubleoptinTemplateId') {
+                    $sendinDoubleoptinTemplateId = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinOptinRedirectUrlCheck') {
+                    $sendinOptinRedirectUrlCheck = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinDoubleoptinRedirectUrl') {
+                    $sendinDoubleoptinRedirectUrl = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinFinalConfirmEmail') {
+                    $sendinFinalConfirmEmail = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/SendinTemplateFinal') {
+                    $sendinTemplateFinal = $sendinblueEnabled['value'];
+                }
+                else if($sendinblueEnabled['path'] == 'sendinblue/smtp/status') {
+                    $moduleStatus = $sendinblueEnabled['value'];
+                }
+            } 
+        }
+
+        $list = $sendinModule->lists(); 
+        $selectedlist = $sendinModule->getUserlists();
+        $templatelist = $sendinModule->templateDisplay();
+        $importOldSubsStatus = $sendinModule->getImportOldSubsStatus();
+        $credit = $sendinModule->getSmsCredit();
+        $notifyEmailStatus = $sendinModule->getNotifyEmailStatus();
+        $notifyValueStatus = $sendinModule->getNotifyValueStatus();
+        $sendSmsOrderSubject = $sendinModule->getSendSmsOrderSubject();
+        $sendSmsmOrderMessage = $sendinModule->getSendSmsmOrderMessage();
+        $sendSmsShipingSubject = $sendinModule->getSendSmsShipingSubject();
+        $sendSmsShipingMessage = $sendinModule->getSendSmsShipingMessage();
+        $newsletterSubscribeCount = $sendinModule->getNewsletterSubscribeCount();
+        $newsletterUnSubscribeCount = $sendinModule->getNewsletterUnSubscribeCount();
+        $formKey = Mage::getSingleton('core/session')->getFormKey();
+        $viewData = array(
+                        "formKey" => $formKey,
+                        "sendinStatus" => $sendinblueEnabledStatus,
+                        "apiKey" => $apiKey,
+                        "getSyncronize" => $getSyncronize,
+                        "trackStatus" => $trackStatus,
+                        "trackingHistory" => $trackingHistory,
+                        "notifySmsStatus" => $notifySmsStatus,
+                        "orderSmsStatus" => $orderSmsStatus,
+                        "campaignStatus" => $campaignStatus,
+                        "shipingSmsStatus" => $shipingSmsStatus,
+                        "list" => $list,
+                        "selectedlist" => $selectedlist,
+                        "templatelist" => $templatelist,
+                        "importOldSubsStatus" => $importOldSubsStatus,
+                        "moduleStatus" => $moduleStatus,
+                        "credit" => $credit,
+                        "notify_value" => $notifyValue,
+                        "notifyEmailStatus" => $notifyEmailStatus,
+                        "notifyValueStatus" => $notifyValueStatus,
+                        "sendSmsOrderSubject" => $sendSmsOrderSubject,
+                        "sendSmsmOrderMessage" => $sendSmsmOrderMessage,
+                        "sendSmsShipingSubject" => $sendSmsShipingSubject,
+                        "sendSmsShipingMessage" => $sendSmsShipingMessage,
+                        "newsletterSubscribeCount" => $newsletterSubscribeCount,
+                        "newsletterUnSubscribeCount" => $newsletterUnSubscribeCount,
+                        "sendinSubscribeConfirmType" => $sendinSubscribeConfirmType,
+                        "sendinTemplateId" => $sendinTemplateId,
+                        "sendinDoubleoptinTemplateId" => $sendinDoubleoptinTemplateId,
+                        "sendinOptinRedirectUrlCheck" => $sendinOptinRedirectUrlCheck,
+                        "sendinDoubleoptinRedirectUrl" => $sendinDoubleoptinRedirectUrl,
+                        "sendinFinalConfirmEmail" => $sendinFinalConfirmEmail,
+                        "sendinTemplateFinal" => $sendinTemplateFinal
+                    );
+        Mage::register('viewData', $viewData);
         $this->loadLayout();
         $this->renderLayout();
     }
@@ -50,13 +177,13 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                             $sendinSwitch->saveConfig('sendinblue/SendinOptinListId', $optinId);
                         }
                     }
-                    $message = $this->__('Your setting has been successfully saved');
+                    $message = $this->__('Your setting has been successfully saved, please clean your cache.');
                 }
 
                 if (!empty($requestParameter['sendin_list'])) {
                     $list = implode('|', $requestParameter['sendin_list']);
                     $sendinSwitch->saveConfig('sendinblue/list', $list);
-                    $message = $this->__('Your setting has been successfully saved');
+                    $message = $this->__('Your setting has been successfully saved, please clean your cache.');
                     Mage::getModel('adminhtml/session')->addSuccess($message);
                 } 
                 else {
@@ -134,12 +261,12 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                     $sendinSwitch->saveConfig('sendinblue/syncronize', 1);
                     $sendinModule->removeOldEntry();
                     if($sendinModule->getImportOldSubsStatus() == 1) {
-                        $message = $this->__('Old subscribers not imported successfully, please click on Import Old Subscribers button to import them again');
+                        $message = $this->__('Old subscribers not imported successfully, please click on Import Old Subscribers button to import them again and clean your cache.');
                         Mage::getModel('core/session')->addError($message);
                     }
                     else {
-                        $message = $this->__('Your setting has been successfully saved');
-                       Mage::getModel('adminhtml/session')->addSuccess($message);
+                        $message = $this->__('Your setting has been successfully saved, please clean your cache.');
+                        Mage::getModel('adminhtml/session')->addSuccess($message);
                     }
                     
                 } 
@@ -236,7 +363,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                 else {
                     $sendinSwitch->saveConfig('sendinblue/Sendin_Sender_Order', $senderOrder);
                     $sendinSwitch->saveConfig('sendinblue/Sendin_Sender_Order_Message', $senderOrderMessage);
-                    $message = $this->__('Your setting has been successfully saved');
+                    $message = $this->__('Your setting has been successfully saved, please clean your cache');
                     Mage::getModel('adminhtml/session')->addSuccess($message);
                 }           
             }
@@ -270,7 +397,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                 else {
                     $sendinSwitch->saveConfig('sendinblue/Sendin_Sender_Shipment', $senderShipment);
                     $sendinSwitch->saveConfig('sendinblue/Sendin_Sender_Shipment_Message', $senderShipmentMessage);
-                    $message = $this->__('Your setting has been successfully saved');
+                    $message = $this->__('Your setting has been successfully saved, please clean your cache');
                     Mage::getModel('adminhtml/session')->addSuccess($message);
                 }           
             }

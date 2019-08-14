@@ -201,7 +201,7 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
         $sendinModule = Mage::getModel('sendinblue/sendinblue');
         $apiDetails['api_key'] = $sendinModule->getApiKey();
         $psmailinObj = Mage::getModel('sendinblue/psmailin',$apiDetails);
-        
+
         $postData = $this->getRequest()->getPost();
         try {
             if (empty($postData)) {
@@ -216,23 +216,17 @@ class Sendinblue_Sendinblue_Adminhtml_AjaxController extends Mage_Core_Controlle
                 }
                 $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportOldOrdersToSendinblue.csv', 'w+');
                 fwrite($handle, 'EMAIL,ORDER_ID,ORDER_PRICE,ORDER_DATE'.PHP_EOL);
-                $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
-            
-                $salesOrderColection = Mage::getModel('sales/order');
-                foreach ($collection as $customer) {
+                
+                $collection = Mage::getModel('customer/customer')->getCollection();
+                $collection->addNameToSelect()
+                    ->joinTable('newsletter_subscriber', 'customer_id = entity_id', array('subscriber_status'), '{{table}}.subscriber_status = 1');
 
+                $salesOrderColection = Mage::getModel('sales/order');                
+                foreach ($collection as $customer) {
                     $customerId = $customer->getData('entity_id');
-                    $email = $customer->getData('email');
                     $totalOrders = $salesOrderColection->getCollection()->addFieldToFilter('customer_id', $customerId); 
-                    $orderCount = $totalOrders->count();
-                    if ($orderCount > 0) {
-                        $userData = array();
-                        $userData['users'] = array($email);
-                        $userStatus = $psmailinObj->getUsersBlacklistStatus($userData);
-                    }
-                    
-                    if (isset($userStatus['code']) &&  $userStatus['code'] == 'success') {
-                        foreach($totalOrders as $orderData) {
+                    foreach($totalOrders as $orderData) {
+                        if(count($orderData) > 0) {
                             if (isset($dateValue['data']['date_format']) && $dateValue['data']['date_format'] == 'dd-mm-yyyy') {
                                 $orderDate = date('d-m-Y', strtotime($orderData['created_at']));
                             }

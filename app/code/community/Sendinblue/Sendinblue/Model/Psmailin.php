@@ -47,7 +47,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
         $ch = curl_init($called_url);
         $auth_header = 'api-key:'.$this->api_key;
         $content_header = "Content-Type:application/json";
-        $track_header = "sib-plugin:magento-1.2.8";
+        $track_header = "sib-plugin:magento-1.3.2";
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             // Windows only over-ride
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
