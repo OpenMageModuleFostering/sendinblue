@@ -1134,7 +1134,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		$handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
 		$key_value = array_keys($attributesName);
 		$key_value[] = 'EMAIL';
-		fwrite($handle, implode(',', $key_value)."\n");
+		fwrite($handle, implode(';', $key_value)."\n");
 
 		foreach ($resp as $newsdata)
 		{
@@ -1144,7 +1144,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				$newsdata['SMS'] = $this->checkMobileNumber($newsdata['SMS'], $country_id);
 			}
 			$key_value = $newsdata;
-			fwrite($handle, str_replace("\n", "",implode(',', $key_value))."\n");
+			fwrite($handle, str_replace("\n", "",implode(';', $key_value))."\n");
 		}
 		fclose($handle);
 		$total_value = count($resp);
@@ -1314,7 +1314,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		else
 		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Expect:', 'sib-plugin:magento-1.2.6'
+			'Expect:', 'sib-plugin:magento-1.2.7'
 		));	
 		
 		$ndata = trim($ndata,'&');		
@@ -1345,7 +1345,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		else
 		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Expect:', 'sib-plugin:magento-1.2.6'
+			'Expect:', 'sib-plugin:magento-1.2.7'
 		));	
 		
 		$ndata = trim($ndata,'&');		
