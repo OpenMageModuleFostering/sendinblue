@@ -154,7 +154,21 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
                                    <span title="<?php echo $this->__('Select the contact list where you want to save the contacts of your site Magento. By default, we have created a list Magento in your SendinBlue account and we have selected it'); ?>" class="toolTip">&nbsp;</span>
                                     </td>	
                                 </tr>
-                                
+                                <tr>
+                                	<td><label><?php echo $this->__('Manage email template'); ?></label></td>
+									<td> <select  name="template" id="template" style="width: 230.833px;" class ="ui-widget ui-state-default ui-corner-all">
+										<option value=""><?php echo $this->__('Select template'); ?></option>
+                                    <?php $templatelist = Mage::getModel('sendinblue/sendinblue')->templateDisplay();
+									if (!empty($templatelist->result->campaign_records))
+									{
+									foreach ($templatelist->result->campaign_records as $template_data)
+									{ ?>                        
+                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getModel('sendinblue/sendinblue')->getTemplateId()) echo 'selected = "selected"' ?> ><?php echo $template_data->campaign_name; ?></option>					
+                                    <?php }} ?>
+                                   </select>
+
+                                   <span title="<?php echo $this->__('Select a SendinBlue template that will be sent personalized for each contact that subscribes to your newsletter'); ?>" class="toolTip">&nbsp;</span></td>
+								</tr>	
                                 <tr>
                                 <td>&nbsp;</td>
                                 <td class="a-left">
@@ -232,6 +246,19 @@ $style_smtp = '';
 						<span title="<?php echo $this->__('This feature will allow you to transfer all your customers orders from Magento into SendinBlue to implement your email marketing strategy.'); ?>" class="toolTip">&nbsp;</span>
 						</td>	
 					</tr>
+                                        <?php //echo Mage::getModel('sendinblue/sendinblue')->getTrackingStatus();die;  
+                                         if (Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==1 && Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus()==1)
+                                                $style_track = '';
+                                                else
+                                                $style_track = 'style="display:none;"';
+                                        if(Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==1 && Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus()==1) { ?>
+                                        <tr <?php echo $style_track; ?> class='ordertracking'>
+                                            <td>&nbsp;</td>
+                                            <input type="hidden" name="history_status" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus(); ?>" id="history_status">
+                                            <input name="importordertrackingUrl" type="hidden" id="importordertrackingUrl" value="<?php echo $this->getUrl('sendinblue/ajax/orderhistory'); ?>" />
+                                            <td class="input-ele"><label style="text-align:left;"><a href="javascript:void(0);" class="Trackhistory button btn" style="color: #000000; outline: 0 none; text-decoration: none; font-weight: normal;"><?php echo $this->__('Import the data of previous orders'); ?></a></label></td>
+                                        </tr>
+                                        <?php } ?>
 				</table>
 			</fieldset>
 	</div>
@@ -248,8 +275,10 @@ $style_smtp = '';
             <td class="row1" colspan="2" style="border:none; padding-top:10px;">
                <span style="margin-bottom:10px; color:#333333;">
 				   <?php echo $this->__('Currently you have '); ?>
-				   <?php $credit = Mage::getModel('sendinblue/sendinblue')->getSmsCredit(); ?>
-                   <?php if ($credit >= 10){ ?> <strong style="color:#000000;"><?php echo $credit; ?></strong><?php } else {?><strong style="color:#F03D25;"><?php echo $credit; ?></strong><?php } ?>
+				   <?php $credit = Mage::getModel('sendinblue/sendinblue')->getSmsCredit(); 
+                                   $notify_value = Mage::getModel('sendinblue/sendinblue')->getNotifyValueStatus();
+                                   ?>
+                   <?php if ($credit >= $notify_value){ ?> <strong style="color:#000000;"><?php echo $credit; ?></strong><?php } else {?><strong style="color:#F03D25;"><?php echo $credit; ?></strong><?php } ?>
 				    
 				    <?php echo $this->__(' credits sms. To buy more credits, please click'); ?>
 				<a target="_blank" href ="<?php echo $this->__('https://www.sendinblue.com/pricing'); ?>" style="color: #000000; outline: 0 none; text-decoration: none;">
@@ -583,6 +612,7 @@ $style_smtp = '';
 <input name="ajaxOrderSmsUrl" type="hidden" id="ajaxOrderSmsUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxordersms'); ?>" />
 <input name="ajaxOrderShippedUrl" type="hidden" id="ajaxOrderShippedUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxordershipped'); ?>" />
 <input name="ajaxSmsCampaignUrl" type="hidden" id="ajaxSmsCampaignUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxsmscampaign'); ?>" />
+<input name="ajaxSmsSubscribeUrl" type="hidden" id="ajaxSmsSubscribeUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxsmssubscribe'); ?>" />
 <input type="hidden" name="pagenumber" id="pagenumber" value="1" />	
 <div id="userGrid">
 <div class="grid">
@@ -603,7 +633,8 @@ $style_smtp = '';
 <th class="no-link"><span class="nobr"><?php echo $this->__('clients'); ?></span></th>
 <th class="no-link"><span class="nobr"><?php echo $this->__('SMS'); ?></span></th>
 <th class="no-link"><span class="nobr"><?php echo $this->__('Newsletter Magento Status'); ?></span></th>
-<th class="no-link last"><span class="nobr"><?php echo $this->__('Newsletter SendinBlue Status'); ?><span title="<?php echo $this->__('Click on the icon to subscribe / unsubscribe the contact from SendinBlue and Magento.'); ?>" class="toolTip">&nbsp;</span></span></th>
+<th class="no-link"><span class="nobr"><?php echo $this->__('Newsletter SendinBlue Status'); ?><span title="<?php echo $this->__('Click on the icon to subscribe / unsubscribe the contact from SendinBlue and Magento.'); ?>" class="toolTip">&nbsp;</span></span></th>
+<th class="no-link last"><span class="nobr"><?php echo $this->__('SMS SendinBlue Status'); ?><span title="<?php echo $this->__('Click on the icon to subscribe / unsubscribe the sms from SendinBlue and Magento.'); ?>" class="toolTip">&nbsp;</span></span></th>
 </tr>
 </thead>
 <tbody class='midleft'>

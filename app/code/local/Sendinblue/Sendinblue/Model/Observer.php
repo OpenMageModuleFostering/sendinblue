@@ -80,7 +80,7 @@ class Sendinblue_Sendinblue_Model_Observer
 		$cus_session = Mage::getSingleton('customer/session')->getCustomer();
 		$customer = ($cus_session->getEmail())? $cus_session : $observer->getCustomer();
 		$cus_data = $cus_session->getData();
-		 $email = (isset($params['email']))? $params['email'] : $customer->getEmail();
+		$email = (isset($params['email']))? $params['email'] : $customer->getEmail();
 		$cid = $customer->getEntityid();
 		$fname = $customer->getFirstname();
 		$fname = empty($fname)?'':$fname;
@@ -106,29 +106,22 @@ class Sendinblue_Sendinblue_Model_Observer
 
 		$is_subscribed = (isset($params['is_subscribed']))? $params['is_subscribed'] : '';
 		
-		$is_subscribedupdate = (isset($params['is_subscribed']))? 1 : 0;
-		 if ( isset($params['is_subscribed']) == '' ) {
-			$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
-			$nlStatus = $costomer_data->getStatus();
-			$is_subscribedupdate = 1;
-			if ($nlStatus == '') {
-				$is_subscribedupdate = 0;
-			}
-		 } 
 		if ($fname != '' || $lname != '' || $telephone != '' || $email != '')
 		{
+			$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
+			$nlStatus = $costomer_data->getStatus();
+			
 			$extra = $fname.'|'.$lname.'|'.$client.'|'.$telephone;
-                       if (isset($is_subscribed) && $is_subscribed == 1)
-                       $responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($email, $extra);
-                     
-			if (isset($is_subscribedupdate) && $is_subscribedupdate == 1) {
+			if (isset($is_subscribed) && $is_subscribed == 1 && empty($nlStatus))
+			{
 				$responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($email, $extra);
+				Mage::getModel('sendinblue/sendinblue')->sendWsTemplateMail($email);
 			}
 		}
 		
 		if (isset($is_subscribed) && $is_subscribed != '' && $is_subscribed === 0) {
 			Mage::getSingleton('core/session')->addSuccess($is_subscribed);
-			$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($email);
+			$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($params);
 		}
 		return $this;
 	}
@@ -152,7 +145,8 @@ class Sendinblue_Sendinblue_Model_Observer
 			$locale = Mage::app()->getLocale()->getLocaleCode();
 			$mobile = $_shippingAddress->getTelephone();
 			$countryid = $_shippingAddress->getCountryId();
-			$sql = 'SELECT * FROM sendinblue_country_codes WHERE iso_code = "'.$countryid.'" ';
+			$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
+			$sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$countryid.'" ';
 			$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
 			$data = $connection->fetchRow($sql);
 						
@@ -205,7 +199,8 @@ class Sendinblue_Sendinblue_Model_Observer
 			$locale = Mage::app()->getLocale()->getLocaleCode();					
 			$mobile = $orderaddress->getBillingAddress()->getTelephone();
 			$countryid = $orderaddress->getBillingAddress()->getCountryId();
-			$sql = 'SELECT * FROM sendinblue_country_codes WHERE iso_code = "'.$countryid.'" ';
+			$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
+			$sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$countryid.'" ';
 			$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
 			$data = $connection->fetchRow($sql);
 						
@@ -239,12 +234,15 @@ class Sendinblue_Sendinblue_Model_Observer
 	}
 	public function subscribedToNewsletter($observer)
     {
-	  $data = $observer->subscriber;	 
+	  $data = $observer->subscriber;
+ 
 	 if($data->subscriber_status == 3)
 	  Mage::getModel('sendinblue/sendinblue')->emailDelete($data->subscriber_email);
 	 else if ($data->subscriber_status == 1)
+	 {
 	  Mage::getModel('sendinblue/sendinblue')->emailSubscribe($data->subscriber_email);
-	  		 
+	  Mage::getModel('sendinblue/sendinblue')->sendWsTemplateMail($data->subscriber_email);
+	 }		 
 	}
 	public function disableCache(Varien_Event_Observer $observer)
     {

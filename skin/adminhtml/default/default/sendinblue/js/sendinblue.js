@@ -124,6 +124,11 @@ jQuery(document)
 				}
             });
 			
+			jQuery("#sender_order").keydown(function (event) {
+			if (event.keyCode == 32) {
+				event.preventDefault();
+                }
+				});	
              
             
             if(jQuery('#sender_order').val() != '')
@@ -200,6 +205,11 @@ jQuery(document)
 					 
 				}
             });
+			jQuery("#sender_shipment").keydown(function (event) {
+					if (event.keyCode == 32) {
+                    event.preventDefault();
+                }
+				});
             
              if(jQuery('#sender_shipment').val() != '')
 			{
@@ -273,6 +283,11 @@ jQuery(document)
 					 
 				}
             });
+			jQuery("#sender_campaign").keydown(function (event) {
+			if (event.keyCode == 32) {
+                event.preventDefault();
+                }
+				});
             
             if(jQuery('#sender_campaign').val() != '')
 			{
@@ -527,6 +542,12 @@ jQuery(document)
 					{
 						var Tracking = jQuery(this).val();
 						var trackingUrl = jQuery("#trackingUrl").val();
+                                                if (Tracking == 0) {
+							jQuery('.ordertracking').hide();
+						}
+						if (Tracking == 1) {
+							jQuery('.ordertracking').show();
+						}
 						jQuery.ajax({
 							type : "POST",
 							async : false,
@@ -537,6 +558,27 @@ jQuery(document)
 							},
 							success : function(msg){
 								jQuery('#ajax-busy').hide();
+							}
+						});
+					});
+                                        //for import old order history  
+                                        jQuery(".Trackhistory").click(function()
+					{
+						var history_status = jQuery("#history_status").val();
+						var ordertrackingUrl = jQuery("#importordertrackingUrl").val();
+                                                												
+						jQuery.ajax({
+							type : "POST",
+							async : false,
+							url : ordertrackingUrl,
+							data : "history_status=" + history_status,
+							beforeSend : function(){
+								jQuery('#ajax-busy').show();
+							},
+							success : function(msg){
+								jQuery('#ajax-busy').hide();
+								jQuery('.ordertracking').hide();
+								alert(msg);
 							}
 						});
 					});
@@ -603,6 +645,32 @@ jQuery(document)
 							async : false,
 							url : ajaxUrl,
 							data : {"email":email,"newsletter":status},
+							beforeSend : function() {
+								jQuery('#ajax-busy').show();
+							},
+							success : function(msg) {
+								jQuery('#ajax-busy').hide();			
+							}
+						});
+							
+					var page_no = jQuery('#pagenumber').val();		
+					loadData(page_no); // For first time page load
+					
+			});					
+			
+
+        
+        jQuery('body').on('click', '.ajax_sms_subs_href', function (e) {
+				
+					var email = jQuery(this).attr('email');
+					var status = jQuery(this).attr('status');
+					var ajaxSmsUrl = jQuery("#ajaxSmsSubscribeUrl").val();
+					
+					jQuery.ajax({
+							type : "POST",
+							async : false,
+							url : ajaxSmsUrl,
+							data : {"email":email,"sms":status},
 							beforeSend : function() {
 								jQuery('#ajax-busy').show();
 							},
@@ -859,8 +927,10 @@ function smtpvalidate(emailerr)
 function apikvalidate(apierr)
  {
 var sendin_apikey_val = jQuery('#sendin_apikey_val').val();
+var sendin_api_check = jQuery("input[name=sendin_api_status]:checked").val();
 
-   if(sendin_apikey_val.trim() == "")
+
+   if(sendin_apikey_val.trim() == "" && sendin_api_check !=0)
    {
      alert(apierr);
      jQuery('#sendin_apikey_val').focus();

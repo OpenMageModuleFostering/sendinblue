@@ -11,8 +11,8 @@
 class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Controller_Action
 {
     public function indexAction()
-    {   
-		Mage::getModel('sendinblue/sendinblue')->createFolderCaseTwo();
+    {
+        Mage::getModel('sendinblue/sendinblue')->createFolderCaseTwo();
 		$this->loadLayout();
         $this->renderLayout();
         
@@ -27,6 +27,13 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
             if (isset($post['syncronizeSubmit']))
             {
                 $sendin_switch->saveConfig('sendinblue/syncronize', $post['syncronize']);
+				if (!empty($post['template']))
+                {
+                    $sendin_switch = new Mage_Core_Model_Config();
+					$sendin_switch->saveConfig('sendinblue/Sendin_Template_Id', $post['template']);
+					$message = $this->__('Your setting has been successfully saved');
+                }
+
                 if (!empty($post['sendin_list']))
                 {
                     $list = implode('|', $post['sendin_list']);
@@ -38,6 +45,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                     $message = $this->__('Please select a list');
                     Mage::getSingleton('adminhtml/session')->addError($message);
                 }
+				
             }
         }
         catch (Exception $e)
@@ -58,7 +66,6 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                 $result       = Mage::getModel('sendinblue/sendinblue')->checkApikey(trim($post['sendin_apikey']));
                 if (empty($result['error']))
                 {
-					 Mage::getModel('sendinblue/sendinblue')->amdRequest(trim($post['sendin_apikey']));
                     $get_key = Mage::getModel('sendinblue/sendinblue')->getApiKey();
                     if ($get_key == '')
                         Mage::getModel('sendinblue/sendinblue')->createFolderName($post['sendin_apikey']);
@@ -388,7 +395,8 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 				
 					if(!empty($result['shipping_telephone']))
 					{
-						$sql = 'SELECT * FROM sendinblue_country_codes WHERE iso_code = "'.$result['shipping_country_code'].'" ';
+						$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
+						$sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$result['shipping_country_code'].'" ';
 						$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
 						$data = $connection->fetchRow($sql);						
 						$number = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($result['shipping_telephone'],$data['country_prefix']);					
@@ -418,95 +426,74 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 			}
 			else if(isset($post['sender_campaign_save']) && $post['Sendin_Sms_Choice'] == 2)
 			{	
-					$smscredit = Mage::getModel('sendinblue/sendinblue')->getSmsCredit();
- 					$collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname');
-					foreach ($collection as $customer)
-					{
-						
-						$email            = $customer->getData('email');
-						$firstname        = $customer->getData('firstname');
-						$lastname         = $customer->getData('lastname');
-						$cid 			  =	$customer->getData('entity_id');
-						
-						$collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
-						$telephone = '';
-						foreach ($collectionAddress as $customerPhno) {
-							$telephone         = $customerPhno->getData('telephone');
-							$country_id         = $customerPhno->getData('country_id');
-						}
-						
-						$customer_select[$email] = array(
-							'email' => $email,
-							'firstname' => $firstname,
-							'lastname' => $lastname, 
-							'telephone' => $telephone,
-							'country_id' => $country_id,
-							'customer_id' => $cid
-						);
-					}
-			
-					$newsletterArr = array();
-					$newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
-					$cnt = 0;
-					foreach ( $newsletter->getItems() as $subscriber )
-					{
-						$customer_id = $subscriber->getCustomerId();;
-						$subscriber_email = $subscriber->getSubscriberEmail();
-						$subscriber_status = $subscriber->getSubscriberStatus();
-						
-						if ( !empty($customer_select[$subscriber_email]) ) {
-							$newsletterArr[$cnt] = $customer_select[$subscriber_email];
-							$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-							unset($customer_select[$subscriber_email]);
-						}
-						else {
-							$newsletterArr[$cnt] = array(
-													'email' => $subscriber_email,
-													'firstname' => '',
-													'lastname' => '',
-													'telephone' => '',
-													'country_id' => ''
-												);
-							$newsletterArr[$cnt]['customer_id'] = $customer_id;
-							$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-						}
-						$cnt++;
-					} 
-					foreach($newsletterArr as $result) 
-					{
-							
-						
-							if(!empty($result['telephone']))
-							{  
-							
-							$sql = 'SELECT * FROM sendinblue_country_codes WHERE iso_code = "'.$result['country_id'].'" ';
-							$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
-							$data = $connection->fetchRow($sql);
-						    $number = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($result['telephone'],$data['country_prefix']);		
-							$msgbody = $post['sender_campaign_message'];
-							$firstname = $result['firstname'];
-							$lastname = $result['lastname'];
-							$fname = str_replace('{first_name}', $firstname, $msgbody);
-							$msgbody = str_replace('{last_name}', $lastname."\r\n", $fname);				
-							$arr = array();  
-							$arr['to'] =  $number;
-							$arr['from'] = $post['sender_campaign'];
-						    $arr['text'] = $msgbody;
-							Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);
-										     
-							
-							}						
-					}					
-							if ($smscredit >= 1)
-							{
-								$message = $this->__('Message has been sent successfully');
-								Mage::getSingleton('adminhtml/session')->addSuccess($message);
-							}
-							else
-							{
-								$message = $this->__('Message has not been sent successfully');
-								Mage::getSingleton('adminhtml/session')->addError($message);
-							}									    
+                            $smscredit = Mage::getModel('sendinblue/sendinblue')->getSmsCredit();
+ 							 
+                            $camp_name = 'SMS_'.date('Ymd');
+                            $key = Mage::getModel('sendinblue/sendinblue')->getApiKey();
+                            if ($key == '')
+                            return false;
+                            $param['key'] = $key;
+                            $param['listname'] = $camp_name;
+                            $param['webaction'] = 'NEWLIST';
+                            $param['list_parent'] = '1';
+                            //folder id
+                            $list_response = Mage::getModel('sendinblue/sendinblue')->curlRequest($param);
+                            $res = json_decode($list_response);
+                            $list_id = $res->result;
+                            // import old user to SendinBlue
+
+                            $iso_code = $this->context->language->iso_code;
+                            $allemail = Mage::getModel('sendinblue/sendinblue')->smsCampaignList();
+
+                            $data['webaction'] = 'MULTI-USERCREADIT';
+                            $data['key'] = $key;
+                            $data['attributes'] = $allemail;
+                            $data['listid'] = $list_id;
+                            // List id should be optional
+
+                            $data_responce = Mage::getModel('sendinblue/sendinblue')->curlRequest($data);    
+                                        
+                            $msgbody = $post['sender_campaign_message'];
+                            $value_langauge = Mage::getModel('sendinblue/sendinblue')->getApiConfigValue();
+                            if ($value_langauge->language == 'fr')
+                            {   
+                                $firstname = '{NOM}';
+                                $lastname = '{PRENOM}';
+                            }
+                            else
+                            {
+                                $firstname = '{NAME}';
+                                $lastname = '{SURNAME}';
+                            }
+                            $fname = str_replace('{first_name}', $firstname, $msgbody);
+                            $msgbody = str_replace('{last_name}', $lastname."\r\n", $fname);				
+                            $arr = array();							
+                            $sender_campaign = $post['sender_campaign'];
+                            $content = $msgbody;
+                            //Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);										     
+                            $arr['key'] = Mage::getModel('sendinblue/sendinblue')->getApiKey();
+                            $arr['webaction'] = 'SMSCAMPCREADIT';
+                            $arr['camp_name'] = $camp_name; // mandatory
+                            $arr['sender'] = $sender_campaign;
+                            $arr['content'] = $content;
+                            $arr['bat_sent'] = '';
+                            $arr['listids'] = $list_id; // mandatory if SMS campaign is scheduled
+                            $arr['exclude_list'] = '';
+                            $arr['schedule'] = date('Y-m-d H:i:s', time() + 300);
+
+                            $data_camp = Mage::getModel('sendinblue/sendinblue')->curlRequest($arr);
+
+
+                            if ($smscredit >= 1)
+                            {
+                                    $message = $this->__('Message has been sent successfully');
+                                    Mage::getSingleton('adminhtml/session')->addSuccess($message);
+                            }
+                            else
+                            {
+                                    $message = $this->__('Message has not been sent successfully');
+                                    Mage::getSingleton('adminhtml/session')->addError($message);
+                            }									    
 			}
 			
         }
