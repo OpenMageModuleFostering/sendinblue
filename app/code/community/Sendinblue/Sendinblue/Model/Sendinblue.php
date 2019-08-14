@@ -1314,7 +1314,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		else
 		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Expect:'
+			'Expect:', 'sib-plugin:magento-1.2.6'
 		));	
 		
 		$ndata = trim($ndata,'&');		
@@ -1345,7 +1345,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		else
 		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Expect:'
+			'Expect:', 'sib-plugin:magento-1.2.6'
 		));	
 		
 		$ndata = trim($ndata,'&');		
