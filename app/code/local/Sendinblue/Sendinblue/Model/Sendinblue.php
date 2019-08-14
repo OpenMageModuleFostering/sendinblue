@@ -391,7 +391,12 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			$result_arr = $response->result;
 			$collection = Mage::getResourceModel('newsletter/subscriber_collection')->showStoreInfo()->showCustomerInfo()->toArray();
 			$subscriber_data = $collection['items'];
-			$emails = array();
+			$emails = array();			
+			$subscriber_data_email = array();
+			foreach($subscriber_data as $s)
+			{
+				$subscriber_data_email[$s['subscriber_email']] = $s;
+            }
 			
 			if (count($result_arr) > 0)
 			{
@@ -399,10 +404,13 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				{
 					foreach ($value as $user_data)
 					{
-						foreach ($subscriber_data as $data)
-						{
+						 if(isset($subscriber_data_email[$user_data->email]))
+						 {
+                                                
+							// on a trouvé le subscriber magento
+							$data = $subscriber_data_email[$user_data->email];
 							$temp_sub_status = ($data['subscriber_status'] == 3) ? 1 : 0;
-							if (($data['subscriber_email'] == $user_data->email) && ($temp_sub_status != $user_data->blacklisted))
+							if ($temp_sub_status != $user_data->blacklisted)
 							{
 								$emails[] = $data['subscriber_email'];
 								$subscribe_data['subscriber_id'] = $data['subscriber_id'];
