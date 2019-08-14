@@ -33,15 +33,14 @@ class Sendinblue_Sendinblue_Model_Psmailin
         if (!function_exists('curl_init')) {
             throw new Exception('Mailin requires CURL module');
         }
-
-        $this->base_url = $params['url'];
+        $this->base_url = "https://api.sendinblue.com/v2.0";
         $this->api_key = $params['api_key'];
 
     }
+
     /**
      * Do CURL request with authorization
      */
-
     private function doRequest($resource, $method, $input)
     {
         $called_url = $this->base_url."/".$resource;
@@ -66,6 +65,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
         curl_close($ch);
         return json_decode($data, true);
     }
+    
     public function get($resource, $input)
     {
         return $this->doRequest($resource, "GET", $input);
@@ -1184,5 +1184,101 @@ class Sendinblue_Sendinblue_Model_Psmailin
         $id = $data['id'];
         unset($data['id']);
         return $this->get("sms/".$id, json_encode($data));
+    }
+
+    
+    public function updateMailinParter($data)
+    {
+        return $this->put("account/mailin_partner", json_encode($data));
+    }
+
+    /*
+        Get SMTP details.
+    */    
+    public function getPluginConfig()
+    {
+        return $this->get("account/plugin_config", "");
+    }
+    
+    /*
+        Get blacklist status of user and other details retrieved.
+        @param {Array} data contains php array with key value pair.
+        @options data {String} Emailids: get list of email ids [Mandatory]
+    */    
+    public function getUsersBlacklistStatus($data)
+    {
+        return $this->post("user/get_blacklist_status",json_encode($data));
+    }
+
+    /*
+        This api is used to synchronize user status.
+    */
+    public function syncUsersStatus($data)
+    {
+        return $this->put("user/sync_status", json_encode($data));
+    }
+
+    /*
+        Get all folders and it lists data for that user.
+    */    
+    public function displayFoldersLists()
+    {
+        return $this->get("folder/display_folder_lists", "");
+    }   
+
+    /*
+        Get all lists of data for that user.
+    */
+    public function displayListForPlugin()
+    {
+        return $this->get("list/display_list_for_plugin", "");
+    }   
+
+    /*
+        This API is used to update user subscription status.
+        @param {Array} data contains php array with key value pair.
+        @options data {string} timezone: Time zone of that user [Mandatory]
+        @options data {String} user_status: User status that inclue email, status, and Time [Mandatory]
+    */
+    public function updateUserSubscriptionStatus($data)
+    {
+        return $this->post("user/update_user_subscription_status", json_encode($data));
+    }
+
+    /*
+        This is used to get black list data.
+        @param {Array} data contains php array with key value pair.
+        @options data {string} listids: List of ids [Mandatory]
+    */
+    public function getListUsersBlacklistStatus($data)
+    {
+        return $this->post("list/display_list_users_blacklist_status", json_encode($data));
+    }
+
+    /*
+       This function is used to unsubscribe a user by email id and list id.
+       @param {Array} data contains php array with key value pair.
+       @options data {String} Emails: List of emails
+       @options data {Integer} Ids: id of lists 
+    */    
+    public function unSubscribApi($data)
+    {
+        return $this->post("user/un_subscrib_api", json_encode($data));
+    }
+
+    /*
+        This api is used to Add multiple users.
+    */    
+    public function addMultipleUser($data)
+    {
+        return $this->post("user/add_multiple_users", json_encode($data));
+    }
+
+    /*
+        This function is used to unsubscribe a user SMS service by email id and list id.
+    */    
+    public function userSmsUnsubscribed($data)
+    {
+        return $this->post("user/user_sms_unsubscribed", json_encode($data));
     }
 }

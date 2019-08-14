@@ -15,752 +15,793 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
         $this->loadLayout();
         $this->renderLayout();
         $params = Mage::app()->getRequest()->getParams();
-		$params = empty($params)?array():$params;
-		if (isset($params['sendin_apikey']) && $params['sendin_apikey'] != '')
-			$this->CreateFolderCaseTwo();
+        $params = empty($params) ? array() : $params;
+        if (isset($params['sendin_apikey']) && $params['sendin_apikey'] != '') {
+            $this->CreateFolderCaseTwo();
+        }
     }
 
     public function campaignAction()
     {
-        $post = $this->getRequest()->getPost();
+        $postData = $this->getRequest()->getPost();
         try {
-            if (empty($post))
-             echo  Mage::throwException($this->__('Invalid form data.'));
-           		$sendin_switch = new Mage_Core_Model_Config();
-				$sendin_switch->saveConfig('sendinblue/sms/campaign', $post['campaignSetting']);
-				echo $this->__('Your setting has been successfully saved');
+            if (empty($postData)) { 
+                echo  Mage::throwException($this->__('Invalid form data.'));
+            }
+            $sendinSwitch = Mage::getModel('core/config');
+            $sendinSwitch->saveConfig('sendinblue/sms/campaign', $postData['campaignSetting']);
+            echo $this->__('Your setting has been successfully saved');
         }
-        catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
         }
     }
+
     public function orderAction()
     {
-        $post = $this->getRequest()->getPost();
+        $postData = $this->getRequest()->getPost();
         try {
-            if (empty($post))
+            if (empty($postData)) { 
                 Mage::throwException($this->__('Invalid form data.'));
-           		$sendin_switch = new Mage_Core_Model_Config();
-				$sendin_switch->saveConfig('sendinblue/sms/order', $post['orderSetting']);
-				echo $this->__('Your setting has been successfully saved');
+            }
+            $sendinSwitch = Mage::getModel('core/config');
+            $sendinSwitch->saveConfig('sendinblue/sms/order', $postData['orderSetting']);
+            echo $this->__('Your setting has been successfully saved');
         }
-        catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
         }
     }
-     public function creditAction()
+
+    public function creditAction()
     {
-		$post = $this->getRequest()->getPost();
-		try {
-			if (empty($post))
-				Mage::throwException($this->__('Invalid form data.'));
-			$sendin_switch = new Mage_Core_Model_Config();
-			$sendin_switch->saveConfig('sendinblue/sms/credit', $post['sms_credit']);
-			echo $this->__('Your setting has been successfully saved');
-		}
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}
+        $postData = $this->getRequest()->getPost();
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            $sendinSwitch = Mage::getModel('core/config');
+            $sendinSwitch->saveConfig('sendinblue/sms/credit', $postData['sms_credit']);
+            echo $this->__('Your setting has been successfully saved');
+        }
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }
     }
+
     public function shipingAction()
     {
-        $post = $this->getRequest()->getPost();
+        $postData = $this->getRequest()->getPost();
         try {
-            if (empty($post))
+            if (empty($postData)) {
                 Mage::throwException($this->__('Invalid form data.'));
-           		$sendin_switch = new Mage_Core_Model_Config();
-				$sendin_switch->saveConfig('sendinblue/sms/shiping', $post['shipingSetting']);
-				echo $this->__('Your setting has been successfully saved');
+            }
+            $sendinSwitch = Mage::getModel('core/config');
+            $sendinSwitch->saveConfig('sendinblue/sms/shiping', $postData['shipingSetting']);
+            echo $this->__('Your setting has been successfully saved');
         }
-        catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
         }
     }
+
     public function codepostAction()
     {
-        $post = $this->getRequest()->getPost();
+        $postData = $this->getRequest()->getPost();
         try {
-			if (empty($post))
-				Mage::throwException($this->__('Invalid form data.'));
-			$sendin_switch = new Mage_Core_Model_Config();
-			$sendin_switch->saveConfig('sendinblue/tracking/code', $post['script']);
-			$sendin_switch->saveConfig('sendinblue/improt/history', $post['script']);
-			echo $this->__('Your setting has been successfully saved');
-			}
-        catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            $sendinSwitch = Mage::getModel('core/config');
+            $sendinSwitch->saveConfig('sendinblue/tracking/code', $postData['script']);
+            $sendinSwitch->saveConfig('sendinblue/improt/history', $postData['script']);
+            echo $this->__('Your setting has been successfully saved');
+        }
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
         }
     }
-	public function emptySubsUserToSendinblueAction()
-	{
-		$post = $this->getRequest()->getPost();
-        try {
-            if (empty($post))
-               Mage::throwException($this->__('Invalid form data.'));
-			if ($post['proc_success'] != '')
-            {
-				$handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
-				$key_value = array();
-				$key_value[] = '';			
-				fputcsv($handle, $key_value);
-				fclose($handle);
-			}
-			}
-		catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
-        }
-	}
-	public function mailResponceAction()
-	{
-		$post = $this->getRequest()->getParams();
-        try {
-        if (empty($post))
-           Mage::throwException($this->__('Invalid form data.'));
 
-       	$user_email = base64_decode($post['value']);
-		if ($user_email != '') {			
-			$newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->addFieldToFilter('subscriber_email', array('eq' => $user_email))->load();;
-			foreach ($newsletter->getItems() as $subscriber) {
-				$subsdata = $subscriber->getData();
-            	$subscriber_email = $subsdata['subscriber_email'];
-            	$subscriber_status = $subsdata['subscriber_status'];
-			}
-			$sendinModule = Mage::getModel('sendinblue/sendinblue');
-			if (!empty($subscriber_email) && $subscriber_status == 1) {
-				$listId = $sendinModule->getUserlists();
-				$doubleOptinId = Mage::getStoreConfig('sendinblue/SendinOptinListId');
-				$api_key = $sendinModule->getApiKey();
-		        $params['url'] = "https://api.sendinblue.com/v2.0";
-		        $params['api_key'] = $api_key;
-		        $obj_mailin = Mage::getModel('sendinblue/psmailin',$params);
-
-				$data = array( "email" => $subscriber_email,
-				        "attributes" => array(),
-				        "blacklisted" => 0,
-				        "listid" => array($listId),
-				        "listid_unlink" => array($doubleOptinId),
-				        "blacklisted_sms" => 0
-				    );
-
-				$responce = $obj_mailin->createUpdateUser($data);
-				$finalStatus = Mage::getStoreConfig('sendinblue/SendinFinalConfirmEmail');
-				if ($finalStatus === 'yes') {
-					$finalTempId = Mage::getStoreConfig('sendinblue/SendinTemplateFinal');
-					$sendinModule->sendWsTemplateMail($subscriber_email, $finalTempId);
-
-				}
-				$urlStatus = $sendinModule->getOptinRedirectUrlCheck();
-
-				if ($urlStatus == 'yes') {
-					$urlValue = $sendinModule->getSendinDoubleoptinRedirectUrl();
-					$this->_redirectUrl($urlValue);
-				} else {
-					$configValue = Mage::getStoreConfig('web/secure/base_url');
-					$this->_redirectUrl($configValue);
-				}
-			}
-		}
-		}
-		catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
-        }
-	}
-	public function emptyImportOldOrderAction()
+    public function emptySubsUserToSendinblueAction()
     {
-		$post = $this->getRequest()->getPost();
+        $postData = $this->getRequest()->getPost();
         try {
-            if (empty($post))
+            if (empty($postData)) {
                Mage::throwException($this->__('Invalid form data.'));
-			if ($post['proc_success'] != '')
-            {
-				$handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportOldOrdersToSendinblue.csv', 'w+');
-				$key_value = array();
-				$key_value[] = '';			
-				fputcsv($handle, $key_value);
-				fclose($handle);
-			}
-			}
-		catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
+            }
+            if ($postData['proc_success'] != '') {
+                $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
+                $keyValue = array();
+                $keyValue[] = '';           
+                fputcsv($handle, $keyValue);
+                fclose($handle);
+            }
         }
-	}
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
+        }
+    }
+
+    public function mailResponceAction()
+    {
+        $postData = $this->getRequest()->getParams();
+        try {
+            if (empty($postData)) {
+               Mage::throwException($this->__('Invalid form data.'));
+            }
+            $userEmail = base64_decode($postData['value']);
+            if ($userEmail != '') {         
+                $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->addFieldToFilter('subscriber_email', array('eq' => $userEmail))->load();;
+                foreach ($newsletter->getItems() as $subscriber) {
+                    $subScriberData = $subscriber->getData();
+                    $subScriberEmail = $subScriberData['subscriber_email'];
+                    $subScriberStatus = $subScriberData['subscriber_status'];
+                }
+                $sendinModule = Mage::getModel('sendinblue/sendinblue');
+                if (!empty($subScriberEmail) && $subScriberStatus == 1) {
+                    $listId = $sendinModule->getUserlists();
+                    $doubleOptinId = Mage::getStoreConfig('sendinblue/SendinOptinListId');
+                    $apiDetails['api_key'] = $sendinModule->getApiKey();
+                    $objPsmailin = Mage::getModel('sendinblue/psmailin',$apiDetails);
+
+                    $userData = array( "email" => $subScriberEmail,
+                        "attributes" => array(),
+                        "blacklisted" => 0,
+                        "listid" => (is_array($listId)) ? $listId : array($listId),
+                        "listid_unlink" => array($doubleOptinId),
+                        "blacklisted_sms" => 0
+                    );
+
+                    $responce = $objPsmailin->createUpdateUser($userData);
+                    $finalStatus = Mage::getStoreConfig('sendinblue/SendinFinalConfirmEmail');
+                    if ($finalStatus === 'yes') {
+                        $finalTemplateId = Mage::getStoreConfig('sendinblue/SendinTemplateFinal');
+                        $sendinModule->sendWsTemplateMail($subScriberEmail, $finalTemplateId);
+                    }
+                    $urlStatus = $sendinModule->getOptinRedirectUrlCheck();
+
+                    if ($urlStatus == 'yes') {
+                        $urlValue = $sendinModule->getSendinDoubleoptinRedirectUrl();
+                        $this->_redirectUrl($urlValue);
+                    } else {
+                        $configValue = Mage::getStoreConfig('web/secure/base_url');
+                        $this->_redirectUrl($configValue);
+                    }
+                }
+            }
+        }
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
+        }
+    }
+    
+    public function emptyImportOldOrderAction()
+    {
+        $postData = $this->getRequest()->getPost();
+        try {
+            if (empty($postData)) {
+               Mage::throwException($this->__('Invalid form data.'));
+            }
+            
+            if ($postData['proc_success'] != '') {
+                $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportOldOrdersToSendinblue.csv', 'w+');
+                $keyValue = array();
+                $keyValue[] = '';           
+                fputcsv($handle, $keyValue);
+                fclose($handle);
+            }
+        }
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
+        }
+    }
+
     public function orderhistoryAction()
     {
         $sendinModule = Mage::getModel('sendinblue/sendinblue');
-        $post = $this->getRequest()->getPost();
+        $apiDetails['api_key'] = $sendinModule->getApiKey();
+        $psmailinObj = Mage::getModel('sendinblue/psmailin',$apiDetails);
+        
+        $postData = $this->getRequest()->getPost();
         try {
-            if (empty($post))
+            if (empty($postData)) {
                 Mage::throwException($this->__('Invalid form data.'));
+            }
 
-            if ($post['history_status'] == 1)
-            {
-            $value = $sendinModule->TrackingSmtp();
-			$date_value = $sendinModule->getApiConfigValue();
-			if (!is_dir(Mage::getBaseDir('media').'/sendinblue_csv'))
-				mkdir(Mage::getBaseDir('media').'/sendinblue_csv', 0777, true);
+            if ($postData['history_status'] == 1) {
+                $value = $sendinModule->trackingSmtp();
+                $dateValue = $sendinModule->getApiConfigValue();
+                if (!is_dir(Mage::getBaseDir('media').'/sendinblue_csv')) {
+                    mkdir(Mage::getBaseDir('media').'/sendinblue_csv', 0777, true);
+                }
+                $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportOldOrdersToSendinblue.csv', 'w+');
+                fwrite($handle, 'EMAIL,ORDER_ID,ORDER_PRICE,ORDER_DATE'.PHP_EOL);
+                $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
+            
+                $salesOrderColection = Mage::getModel('sales/order');
+                foreach ($collection as $customer) {
 
-			$handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportOldOrdersToSendinblue.csv', 'w+');
+                    $customerId = $customer->getData('entity_id');
+                    $email = $customer->getData('email');
+                    $totalOrders = $salesOrderColection->getCollection()->addFieldToFilter('customer_id', $customerId); 
+                    $orderCount = $totalOrders->count();
+                    if ($orderCount > 0) {
+                        $userData = array();
+                        $userData['users'] = array($email);
+                        $userStatus = $psmailinObj->getUsersBlacklistStatus($userData);
+                    }
+                    
+                    if (isset($userStatus['code']) &&  $userStatus['code'] == 'success') {
+                        foreach($totalOrders as $orderData) {
+                            if (isset($dateValue['data']['date_format']) && $dateValue['data']['date_format'] == 'dd-mm-yyyy') {
+                                $orderDate = date('d-m-Y', strtotime($orderData['created_at']));
+                            }
+                            else {
+                                $orderDate = date('m-d-Y', strtotime($orderData['created_at']));
+                            }
+                            $historyData= array();
+                            $historyData[] = array($orderData['customer_email'], $orderData['increment_id'], $orderData['grand_total'], $orderDate);
+                            foreach ($historyData as $line) {
+                                fputcsv($handle, $line);
+                            }
+                        }
+                    }                   
+                }
 
-			fwrite($handle, 'EMAIL,ORDER_ID,ORDER_PRICE,ORDER_DATE'.PHP_EOL);
-
-			
-			$collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
-			
-			$salesOrderColection = Mage::getModel('sales/order');
-			foreach ($collection as $customer)
-			{
-				$cid = $customer->getData('entity_id');
-				$email = $customer->getData('email');
-				$total_orders = $salesOrderColection->getCollection()->addFieldToFilter('customer_id', $cid); 
-				$orderCnt = $total_orders->count();
-				if ($orderCnt > 0)
-				{
-					$data = array();
-					$data['key'] = $sendinModule->getApiKey();
-					$data['webaction'] = 'USERS-STATUS';
-					$data['email'] = $email;
-					$curl_responce = $sendinModule->curlRequest($data);
-					$user_status = json_decode($curl_responce);
-				}
-				if (isset($user_status->result) != '')
-				{
-					foreach($total_orders as $order_data)
-					{
-						if ($date_value->date_format == 'dd-mm-yyyy')
-							$date = date('d-m-Y', strtotime($order_data['created_at']));
-						else
-						$date = date('m-d-Y', strtotime($order_data['created_at']));
-						$history_data= array();
-						$history_data[] = array($order_data['customer_email'],$order_data['increment_id'],$order_data['grand_total'],$date);
-						foreach ($history_data as $line)
-						fputcsv($handle, $line);
-					}
-				}
-			}
-
-		fclose($handle);
-
-		$get_User_lists = $sendinModule->getUserlists();
-		$list = str_replace('|', ',', $get_User_lists);
-		if (preg_match('/^[0-9,]+$/', $list))
-			$list = $list;
-		else
-			$list = '';
-
-		$import_data = array();
-		$import_data['webaction'] = 'IMPORTUSERS';
-		$import_data['key'] = $sendinModule->getApiKey();
-		$import_data['url'] = Mage::getBaseUrl('media').'sendinblue_csv/ImportOldOrdersToSendinblue.csv';
-		$import_data['listids'] = $list;
-		$import_data['notify_url'] = Mage::getBaseUrl().'sendinblue/ajax/emptyImportOldOrder';
-		/**
-		* List id should be optional
-		*/
-		$sendinModule->curlRequestAsyc($import_data);
-
-        $sendin_switch = new Mage_Core_Model_Config();
-		$sendin_switch->saveConfig('sendinblue/improt/history', 0);
-		if($post['langvalue'] == 'fr_FR')
-		$msg = 'Historique des commandes a été importé avec succès.';
-		else
-		$msg = 'Order history has been import successfully';
-
-		echo $msg;
-			}
+                fclose($handle);
+                $getUserLists = $sendinModule->getUserlists();
+                $list = str_replace('|', ',', $getUserLists);
+                $list = (preg_match('/^[0-9,]+$/', $list)) ? $list : '';
+                $importData = array();
+                $importData['url'] = Mage::getBaseUrl('media').'sendinblue_csv/ImportOldOrdersToSendinblue.csv';
+                $importData['listids'] = array($list);
+                $importData['notify_url'] = Mage::getBaseUrl().'sendinblue/ajax/emptyImportOldOrder';
+                /**
+                * List id should be optional
+                */
+                
+                $psmailinObj->importUsers($importData);
+                $sendinSwitch = Mage::getModel('core/config');
+                $sendinSwitch->saveConfig('sendinblue/improt/history', 0);
+                if($postData['langvalue'] == 'fr_FR') {
+                    $msg = 'Historique des commandes a été importé avec succès.';
+                }
+                else {
+                    $msg = 'Order history has been import successfully';
+                }
+                echo $msg;
+            }
         }
-        catch (Exception $e)
-        {
-           echo $this->__($e->getMessage());
+        catch (Exception $exception) {
+           echo $this->__($exception->getMessage());
         }
     }
+
     public function smtppostAction()
     {
         $sendinModule = Mage::getModel('sendinblue/sendinblue');
-        $post = $this->getRequest()->getPost();
+        $postData = $this->getRequest()->getPost();
         try {
-            if (empty($post))
+            if (empty($postData)) {
                 Mage::throwException($this->__('Invalid form data.'));
-            else
-            {
-                $sendin_switch = new Mage_Core_Model_Config();
-				$get_key   = $sendinModule->getApiKey();
-                $result    = $sendinModule->checkApikey($get_key);
-                if (empty($result['error']))
-                {
-                    $sendin_switch->saveConfig('sendinblue/smtp/status', $post['smtptest']);
-                    $smtp_response = $sendinModule->TrackingSmtp(); // get tracking code
-                    if ($smtp_response->result->relay_data->status == 'enabled')
-                    {
-                        $sendin_switch->saveConfig('sendinblue/smtp/authentication', 'crammd5', 'default', 0);
-                        $sendin_switch->saveConfig('sendinblue/smtp/username', $smtp_response->result->relay_data->data->username, 'default', 0);
-                        $sendin_switch->saveConfig('sendinblue/smtp/password', $smtp_response->result->relay_data->data->password, 'default', 0);
-                        $sendin_switch->saveConfig('sendinblue/smtp/host', $smtp_response->result->relay_data->data->relay, 'default', 0);
-                        $sendin_switch->saveConfig('sendinblue/smtp/port', $smtp_response->result->relay_data->data->port, 'default', 0);
-                        $sendin_switch->saveConfig('sendinblue/smtp/ssl', 'null', 'default', 0);
-                        $sendin_switch->saveConfig('sendinblue/smtp/option', 'smtp', 'default', 0);
+            }
+            else {
+                $sendinSwitch = Mage::getModel('core/config');
+                $getKey   = $sendinModule->getApiKey();
+                $apiKeyStatus    = $sendinModule->checkApikey($getKey);
+                if (empty($apiKeyStatus['error'])) {
+                    $sendinSwitch->saveConfig('sendinblue/smtp/status', $postData['smtptest']);
+                    $smtpResponse = $sendinModule->trackingSmtp(); // get tracking code
+                    if (isset($smtpResponse['data']['relay_data']['status']) && $smtpResponse['data']['relay_data']['status'] == 'enabled') {
+                        $sendinSwitch->saveConfig('sendinblue/smtp/authentication', 'crammd5', 'default', 0);
+                        $sendinSwitch->saveConfig('sendinblue/smtp/username', $smtpResponse['data']['relay_data']['data']['username'], 'default', 0);
+                        $sendinSwitch->saveConfig('sendinblue/smtp/password', $smtpResponse['data']['relay_data']['data']['password'], 'default', 0);
+                        $sendinSwitch->saveConfig('sendinblue/smtp/host', $smtpResponse['data']['relay_data']['data']['relay'], 'default', 0);
+                        $sendinSwitch->saveConfig('sendinblue/smtp/port', $smtpResponse['data']['relay_data']['data']['port'], 'default', 0);
+                        $sendinSwitch->saveConfig('sendinblue/smtp/ssl', 'null', 'default', 0);
+                        $sendinSwitch->saveConfig('sendinblue/smtp/option', 'smtp', 'default', 0);
                         echo $this->__('Your setting has been successfully saved');
-                    }else
-                    {
-                        $sendin_switch->saveConfig('sendinblue/smtp/status', 0);
+                    }
+                    else {
+                        $sendinSwitch->saveConfig('sendinblue/smtp/status', 0);
                         echo $this->__('Your SMTP account is not activated and therefore you can\'t use SendinBlue SMTP. For more informations, please contact our support to: contact@sendinblue.com');
                     }
-                }elseif (isset($responce['error']))
+                }
+                else if(isset($responce['error'])) {
                     echo $this->__('You have entered wrong api key');
+                }
             }
         }
-        catch (Exception $e)
-        {
-            echo $this->__($e->getMessage());
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
         }
     }
+
     public function ajaxcontentAction()
     {
-		$sendinModule = Mage::getModel('sendinblue/sendinblue');
-		$post = $this->getRequest()->getPost();
-		try {
-			if (empty($post))
-				Mage::throwException($this->__('Invalid form data.'));
-			else
-			{
-				$locale = Mage::app()->getLocale()->getLocaleCode();
-				if ($locale == 'fr_FR')
-				{
-					$title1 = 'Inscrire le contact';
-					$title2 = 'Désinscrire le contact';
+        $sendinModule = Mage::getModel('sendinblue/sendinblue');
+        $postData = $this->getRequest()->getPost();
+
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            else {
+                $localeCode = Mage::app()->getLocale()->getLocaleCode();
+                if ($localeCode == 'fr_FR') {
+                    $title1 = 'Inscrire le contact';
+                    $title2 = 'Désinscrire le contact';
                     $title3 = 'Inscrire le sms';
-					$title4 = 'Désinscrire le sms';
-					$first = 'Première page';
-					$last = 'Dernière page';
-					$previous = 'Précédente';
-					$next = 'Suivante';
-					$yes = 'oui';
-					$no = 'non';
-				} else
-				{
-					$title1 = 'Unsubscribe the contact';
-					$title2 = 'Subscribe the contact';
+                    $title4 = 'Désinscrire le sms';
+                    $first = 'Première page';
+                    $last = 'Dernière page';
+                    $previous = 'Précédente';
+                    $next = 'Suivante';
+                    $yes = 'oui';
+                    $no = 'non';
+                } 
+                else {
+                    $title1 = 'Unsubscribe the contact';
+                    $title2 = 'Subscribe the contact';
                     $title3 = 'Unsubscribe the sms';
-					$title4 = 'Subscribe the sms';
-					$first = 'First';
-					$last = 'Last';
-					$previous = 'Previous';
-					$next = 'Next';
-					$yes = 'yes';
-					$no = 'no';
-				}
-				$page = (int)$post['page'];
-				$cur_page = $page;
-				$page -= 1;
-				$per_page = 20;
-				$previous_btn = true;
-				$next_btn = true;
-				$first_btn = true;
-				$last_btn = true;
-				$start = $page * $per_page;
-				$count = $sendinModule->getNewsletterSubscribeCount() + $sendinModule->getNewsletterUnSubscribeCount();
-				$no_of_paginations = ceil($count / $per_page);
-				if ($cur_page >= 7)
-				{
-				$start_loop = $cur_page - 3;
-				if ($no_of_paginations > $cur_page + 3)
-					$end_loop = $cur_page + 3;
-				else if ($cur_page <= $no_of_paginations && $cur_page > $no_of_paginations - 6)
-				{
-					$start_loop = $no_of_paginations - 6;
-					$end_loop   = $no_of_paginations;
-				} else
-					$end_loop = $no_of_paginations;
-				} else
-				{
-				$start_loop = 1;
-				if ($no_of_paginations > 7)
-					$end_loop = 7;
-				else
-					$end_loop = $no_of_paginations;
-				}
-				$collection = $sendinModule->getNewsletterSubscribe($start, $per_page);
-				$sendin_status = $sendinModule->checkUserSendinStatus($collection);
-				$sendin_result = isset($sendin_status['result'])?$sendin_status['result']:'';
-				if (count($collection) > 0)
-				 {
-					$i = 1;
-					$msg = '';
-					$skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
-					foreach ($collection as $subscriber)
-					{
-						$email = isset($subscriber['email'])?$subscriber['email']:'';
-						$phone = isset($subscriber['SMS'])?$subscriber['SMS'] : '';
+                    $title4 = 'Subscribe the sms';
+                    $first = 'First';
+                    $last = 'Last';
+                    $previous = 'Previous';
+                    $next = 'Next';
+                    $yes = 'yes';
+                    $no = 'no';
+                }
+                
+                $page = (int)$postData['page'];
+                $currentPage = $page;
+                $page -= 1;
+                $perPage = 20;
+                $previousButton = true;
+                $nextButton = true;
+                $firstButton = true;
+                $lastButton = true;
+                $start = $page * $perPage;
+                $count = $sendinModule->getNewsletterSubscribeCount() + $sendinModule->getNewsletterUnSubscribeCount();
+                $noOfPaginations = ceil($count / $perPage);
+                if ($currentPage >= 7) {
+                    $startLoop = $currentPage - 3;
+                    if ($noOfPaginations > $currentPage + 3) {
+                        $endLoop = $currentPage + 3;
+                    }
+                    else if ($currentPage <= $noOfPaginations && $currentPage > $noOfPaginations - 6) {
+                        $startLoop = $noOfPaginations - 6;
+                        $endLoop   = $noOfPaginations;
+                    } 
+                    else {
+                        $endLoop = $noOfPaginations;
+                    }
+                } 
+                else {
+                    $startLoop = 1;
+                    if ($noOfPaginations > 7) {
+                        $endLoop = 7;
+                    }
+                    else {
+                        $endLoop = $noOfPaginations;
+                    }
+                }
 
-						if (!empty($subscriber['customer_id']) > 0)
-							$client = $yes;
-						else
-							$client = $no;
+                $collection = $sendinModule->getNewsletterSubscribe($start, $perPage);
+                $sendinUserStatus = $sendinModule->checkUserSendinStatus($collection);
+                
+                $sendinUserResult = isset($sendinUserStatus['data']) ? $sendinUserStatus['data'] : '';
+                if (count($collection) > 0) {
+                    $i = 1;
+                    $message = '';
+                    $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
+                    foreach ($collection as $subscriber) {
+                        $email = isset($subscriber['email']) ? $subscriber['email'] : '';
+                        $phone = isset($subscriber['SMS']) ? $subscriber['SMS'] : '';
 
-							$show_status = '';
-							$sms_status = '';
-						if(isset($sendin_result[$email])) {
-							$email_bl_value = isset($sendin_result[$email]['email_bl'])?$sendin_result[$email]['email_bl']:'';
-							if ($email_bl_value === 1 || $sendin_result[$email] == null)
-								$show_status = 0;
-							if ($email_bl_value === 0)
-								 $show_status = 1;
+                        $client = (!empty($subscriber['customer_id']) > 0) ? $yes : $no ;
+                        $showStatus = '';
+                        $smsStatus = '';
+                        if(isset($sendinUserResult[$email])) {
+                            $emailBalanceValue = isset($sendinUserResult[$email]['email_bl']) ? $sendinUserResult[$email]['email_bl'] : '';
 
-								$sms_bl = isset($sendin_result[$email]['sms_bl'])?$sendin_result[$email]['sms_bl']:'';
-								$sms_exist = isset($sendin_result[$email]['sms_exist'])?$sendin_result[$email]['sms_exist']:'';
-								$subs_telephone = isset($subscriber['SMS'])?$subscriber['SMS']:'';
-							if ($sms_bl === 1 && $sms_exist > 0)
-								$sms_status = 0;
-							elseif ($sms_bl === 0 && $sms_exist > 0)
-								 $sms_status = 1;
-							elseif ($sms_exist <= 0 && empty($subs_telephone))
-								 $sms_status = 2;
-							else if ($sms_exist <= 0 && !empty($subs_telephone))
-								$sms_status = 3;
-						}
-						if ($subscriber['subscriber_status'] != 3)
-							$img_magento = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" >';
-						else
-							$img_magento = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/disabled.gif" >';
+                            if ($emailBalanceValue === 1 || $sendinUserResult[$email] == null) {
+                                $showStatus = 0;
+                            }
+
+                            if ($emailBalanceValue === 0) {
+                                $showStatus = 1;
+                            }
+                            
+                            $smsBalance = isset($sendinUserResult[$email]['sms_bl']) ? $sendinUserResult[$email]['sms_bl'] : '';
+                            $smsExist = isset($sendinUserResult[$email]['sms_exist']) ? $sendinUserResult[$email]['sms_exist'] : '';
+                            $subScriberTelephone = isset($subscriber['SMS']) ? $subscriber['SMS'] : '';
+
+                            if ($smsBalance === 1 && $smsExist > 0) {
+                                $smsStatus = 0;
+                            }
+                            else if ($smsBalance === 0 && $smsExist > 0) {
+                                $smsStatus = 1;
+                            }
+                            else if ($smsExist <= 0 && empty($subScriberTelephone)) {
+                                 $smsStatus = 2;
+                            }
+                            else if ($smsExist <= 0 && !empty($subScriberTelephone)) {
+                                $smsStatus = 3;
+                            }
+                        }
+
+                        if ($subscriber['subscriber_status'] != 3) { 
+                            $imgMagento = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" >';
+                        }   
+                        else {
+                            $imgMagento = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/disabled.gif" >';
+                        }
+
+                        $smsStatus = $smsStatus >= 0 ? $smsStatus : '';
+
+                        if ($smsStatus === 1) {
+                            $imgSms = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" id="ajax_contact_status_'.$i.'" title="'.$title3.'" >';
+                        }
+                        else if ($smsStatus === 0) {
+                            $imgSms = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/disabled.gif" id="ajax_contact_status_'.$i.'" title="'.$title4.'" >';
+                        }
+                        else if ($smsStatus === 2 || $smsStatus === '') {
+                                $imgSms = '';
+                        }
+                        else if ($smsStatus === 3) {
+                                $imgSms = 'Not synchronized';
+                        }
+
+                        $showStatus = !empty($showStatus) ? $showStatus : '0';
+
+                        if ($showStatus == 1) {
+                            $imgSendinBlue = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" id="ajax_contact_status_'.$i.'" title="'.$title1.'" >';
+                        }
+                        else {
+                            $imgSendinBlue = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/disabled.gif" id="ajax_contact_status_'.$i.'" title="'.$title2.'" >';
+                        }
+
+                        $message .= '<tr  class="even pointer"><td class="a-left">'.$email.'</td><td class="a-left">'.$client.'</td><td class="a-left">'.$phone.'</td><td class="a-left">'.$imgMagento.'</td>
+                            <td class="a-left"><a status="'.$showStatus.'" email="'.$email.'" class="ajax_contacts_href" href="javascript:void(0)">
+                    '.$imgSendinBlue.'</a></td><td class="a-left last"><a status="'.$smsStatus.'" email="'.$email.'" class="ajax_sms_subs_href" href="javascript:void(0)">
+                    '.$imgSms.'</a></td></tr>';
                         
-                        $sms_status = $sms_status >= 0?$sms_status:'';
+                        $i++;
+                    }
+                }
+                $messagePaging = '';
+                $messagePaging .= '<tr><td colspan="7"><div class="pagination"><ul class="pull-left">';
+                
+                if ($firstButton && $currentPage > 1) {
+                    $messagePaging .= '<li p="1" class="active">'.$first.'</li>';
+                }
+                else if ($firstButton) {
+                    $messagePaging .= '<li p="1" class="inactive">'.$first.'</li>';
+                }
 
-                        if ($sms_status === 1)
-							$img_sms = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" 
-							id="ajax_contact_status_'.$i.'" title="'.$title3.'" >';
-						else if ($sms_status === 0)
-							$img_sms = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/disabled.gif" 
-							id="ajax_contact_status_'.$i.'" title="'.$title4.'" >';
-                        else if ($sms_status === 2 || $sms_status === '')
-                                $img_sms = '';
-                        else if ($sms_status === 3)
-                                $img_sms = 'Not synchronized';
-                            $show_status = !empty($show_status)?$show_status:'0';
-						if ($show_status == 1)
-							$img_sendin = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/enabled.gif" 
-							id="ajax_contact_status_'.$i.'" title="'.$title1.'" >';
-						else
-							$img_sendin = '<img src="'.$skinUrl.'adminhtml/default/default/sendinblue/images/disabled.gif" 
-							id="ajax_contact_status_'.$i.'" title="'.$title2.'" >';
-					  $msg .= '<tr  class="even pointer"><td class="a-left">'.$email.'</td><td class="a-left">'.$client.'</td><td class="a-left">'.$phone.'</td><td class="a-left">'.$img_magento.'</td>
-							<td class="a-left"><a status="'.$show_status.'" email="'.$email.'" class="ajax_contacts_href" href="javascript:void(0)">
-                    '.$img_sendin.'</a></td><td class="a-left last"><a status="'.$sms_status.'" email="'.$email.'" class="ajax_sms_subs_href" href="javascript:void(0)">
-                    '.$img_sms.'</a></td></tr>';
-						$i++;
-					}
-				}
-				$msg_paging = '';
-				$msg_paging .= '<tr><td colspan="7"><div class="pagination"><ul class="pull-left">';
-				if ($first_btn && $cur_page > 1)
-					$msg_paging .= '<li p="1" class="active">'.$first.'</li>';
-				else if ($first_btn)
-					$msg_paging .= '<li p="1" class="inactive">'.$first.'</li>';
-				if ($previous_btn && $cur_page > 1)
-				{
-					$pre = $cur_page - 1;
-					$msg_paging .= '<li p="'.$pre.'" class="active">'.$previous.'</li>';
-				} else if ($previous_btn)
-					$msg_paging .= '<li class="inactive">'.$previous.'</li>';
-				for ($i = $start_loop; $i <= $end_loop; $i++)
-				{
-					if ($cur_page == $i)
-						$msg_paging .= '<li p="'.$i.'" style="color:#fff;background-color:#000000;" class="active">'.$i.'</li>';
-					else
-						$msg_paging .= '<li p="'.$i.'"  class="active">'.$i.'</li>';
-				}
-				if ($next_btn && $cur_page < $no_of_paginations)
-				{
-					$nex = $cur_page + 1;
-					$msg_paging .= '<li p="'.$nex.'" class="active">'.$next.'</li>';
-				} else if ($next_btn)
-					$msg_paging .= '<li class="inactive">'.$next.'</li>';
-				if ($last_btn && $cur_page < $no_of_paginations)
-					 $msg_paging .= '<li p="'.$no_of_paginations.'" class="active">'.$last.'</li>';
-				else if ($last_btn)
-					$msg_paging .= '<li p="'.$no_of_paginations.'" class="inactive">'.$last.'</li>';
-				if ($count != 0)
-					echo $msg.$msg_paging.'</td></tr>';
-		}
-		}catch (Exception $e)
-        {
-            echo $this->__($e->getMessage());
+                if ($previousButton && $currentPage > 1) {
+                    $previousValue = $currentPage - 1;
+                    $messagePaging .= '<li p="'.$previousValue.'" class="active">'.$previous.'</li>';
+                } 
+                else if ($previousButton) {
+                    $messagePaging .= '<li class="inactive">'.$previous.'</li>';
+                }
+
+                for ($i = $startLoop; $i <= $endLoop; $i++) {
+                    if ($currentPage == $i) {
+                        $messagePaging .= '<li p="'.$i.'" style="color:#fff;background-color:#000000;" class="active">'.$i.'</li>';
+                    }
+                    else {
+                        $messagePaging .= '<li p="'.$i.'"  class="active">'.$i.'</li>';
+                    }
+                }
+
+                if ($nextButton && $currentPage < $noOfPaginations) {
+                    $nextValue = $currentPage + 1;
+                    $messagePaging .= '<li p="'.$nextValue.'" class="active">'.$next.'</li>';
+                } 
+                else if ($nextButton) {
+                    $messagePaging .= '<li class="inactive">'.$next.'</li>';
+                }
+
+                if ($lastButton && $currentPage < $noOfPaginations) {
+                     $messagePaging .= '<li p="'.$noOfPaginations.'" class="active">'.$last.'</li>';
+                }
+                else if ($lastButton) {
+                    $messagePaging .= '<li p="'.$noOfPaginations.'" class="inactive">'.$last.'</li>';
+                }
+
+                if ($count != 0) {
+                    echo $message . $messagePaging.'</td></tr>';
+                }
+            }
         }
-	}
-	public function ajaxsmssubscribeAction()
-	{
-		$sendinModule = Mage::getModel('sendinblue/sendinblue');
-		$post = $this->getRequest()->getPost();
-		try {
-			if (empty($post))
-				Mage::throwException($this->__('Invalid form data.'));
-				$email = $post['email'];
-				$data = array();
-				$data['key'] = $sendinModule->getApiKey();
-				$data['webaction'] = 'USERUNSUBSCRIBEDSMS';
-				$data['email'] = $email;
-				$sendinModule->curlRequest($data);			
-			}
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}
-	}
-	public function ajaxupdateAction()
-	{
-		$post = $this->getRequest()->getPost();
-		$coreResource = Mage::getSingleton('core/resource');
-		$tableCustomer = $coreResource->getTableName('customer/entity');
-		$tableNewsletter = $coreResource->getTableName('newsletter/subscriber');
-		$sendinModule = Mage::getModel('sendinblue/sendinblue');
-		$attributesName = $sendinModule->allAttributesName();
-		try {
-		if (empty($post))
-			Mage::throwException($this->__('Invalid form data.'));
-			$list_id = str_replace(',', '|', $sendinModule->getUserlists());
-			$post_email = !empty($post['email'])?$post['email']:'';
-			$post_newsletter = !empty($post['newsletter'])?$post['newsletter']:'';
-			$temp_sub_status = ($post_newsletter == 0) ? 1 : 3;
-			$sql = 'SELECT `store_id`, `entity_id` from '.$tableCustomer.' where email = "'.$post_email.'" ';
-			$connection = $coreResource->getConnection('core_read');
-			$custdata = $connection->fetchRow($sql);
-			if (!empty($post_email) && $post_newsletter == 0)
-			{
-				$locale = Mage::app()->getLocale()->getLocaleCode();
-				$responce = $sendinModule->emailSubscribe($post_email);
-                $responce_data = json_decode($responce);
-				$customerAddr = array();
-				if (isset($responce_data->errorMsg) == 'User not exists')
-				{
-					if (isset($custdata['entity_id']) != '')
-					{
-						$collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$custdata['entity_id']);
-						$telephone = '';
-						foreach ($collectionAddress as $customerPhno) 
-						{
-							$customerAddr = $customerPhno->getData();
-							if (!empty($customerAddr['telephone']) && !empty($customerAddr['country_id']))
-							{
-								$country_code = $sendinModule->getCountryCode($customerAddr['country_id']);
-								$customerAddr['telephone'] = $sendinModule->checkMobileNumber($customerAddr['telephone'], $country_code);	  
-							}
-						}
-						$customer = Mage::getModel("customer/customer");
-						$customer->setWebsiteId(Mage::app()->getWebsite()->getId());
-						$customer->loadByEmail($post_email); //load customer by email id
-						$customer_name = $customer->getData();
-						$user_lang = isset($customer_name['created_in'])?$customer_name['created_in'] : '';
-						$customerData = array_merge($customerAddr, $customer_name);
-						$resp = $sendinModule->merge_my_array($attributesName, $customerData);
-						$resp['CLIENT'] = 1;
-						$resp['MAGENTO_LANG'] = $user_lang;
-						$responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter, $list_id);
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }
+    }
+
+    public function ajaxsmssubscribeAction()
+    {
+        $sendinModule = Mage::getModel('sendinblue/sendinblue');
+        $apiDetails['api_key'] = $sendinModule->getApiKey();
+        $psmailinObj = Mage::getModel('sendinblue/psmailin',$apiDetails);
+
+        $postData = $this->getRequest()->getPost();
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            $email = $postData['email'];
+            $userData = array();
+            $userData['email'] = $email;
+            $psmailinObj->userSmsUnsubscribed($userData);
+        }
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }
+    }
+
+    public function ajaxupdateAction()
+    {
+        $postData = $this->getRequest()->getPost();
+        $coreResource = Mage::getSingleton('core/resource');
+        $tableCustomer = $coreResource->getTableName('customer/entity');
+        $tableNewsletter = $coreResource->getTableName('newsletter/subscriber');
+        $sendinModule = Mage::getModel('sendinblue/sendinblue');
+        $attributesName = $sendinModule->allAttributesName();
+
+        $readDbObject = Mage::getSingleton("core/resource")->getConnection("core_read");
+        $writeDbObject = Mage::getSingleton("core/resource")->getConnection("core_write");
+
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            
+            $listId = str_replace(',', '|', $sendinModule->getUserlists());
+            $postEmail = !empty($postData['email']) ? $postData['email'] : '';
+            $postNewsLetter = !empty($postData['newsletter']) ? $postData['newsletter'] : '';
+            $templateSubscribeStatus = ($postNewsLetter == 0) ? 1 : 3;
+            
+            $queryCustomerEntity = $readDbObject->select()
+                ->from($tableCustomer, array('store_id', 'entity_id'))
+                ->where("email = ?", $postEmail);
+            $stmtCustomerEntity = $readDbObject->query($queryCustomerEntity);
+            $customerData = $stmtCustomerEntity->fetch();
+                    
+            if (!empty($postEmail) && $postNewsLetter == 0) {
+
+                $localeCode = Mage::app()->getLocale()->getLocaleCode();
+                $emailSubscribeResponce = $sendinModule->emailSubscribe($postEmail);
+
+                $customerAddress = array();
+                if (isset($emailSubscribeResponce['code']) && $emailSubscribeResponce['code'] == 'failure' && $emailSubscribeResponce['message'] == 'User not exists') {
+                    if (isset($customerData['entity_id']) != '') {
+                        $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$customerData['entity_id']);
+                        $telephone = '';
+                        foreach ($collectionAddress as $customerPhno) {
+                            $customerAddress = $customerPhno->getData();
+                            if (!empty($customerAddress['telephone']) && !empty($customerAddress['country_id'])) {
+                                $countryCode = $sendinModule->getCountryCode($customerAddress['country_id']);
+                                $customerAddress['telephone'] = $sendinModule->checkMobileNumber($customerAddress['telephone'], $countryCode);    
+                            }
+                        }
+                        $customer = Mage::getModel("customer/customer");
+                        $customer->setWebsiteId(Mage::app()->getWebsite()->getId());
+                        $customer->loadByEmail($postEmail); //load customer by email id
+                        $customerName = $customer->getData();
+                        $userLanguage = isset($customerName['created_in'])?$customerName['created_in'] : '';
+                        $customerData = array_merge($customerAddress, $customerName);
+                        $resp = $sendinModule->mergeMyArray($attributesName, $customerData);
+                        $resp['CLIENT'] = 1;
+                        $resp['MAGENTO_LANG'] = $userLanguage;
+                        $responce = $sendinModule->emailAdd($postEmail, $resp, $postNewsLetter, $listId);
                     }
-                    else
-                    {
-                    $client = 0;
-                    $customerData = array();
-                    $subsdata = Mage::getModel('newsletter/subscriber')->loadByEmail($email)->getData();
-                    $resp = $sendinModule->merge_my_array($attributesName, $subsdata);
-                    $resp['CLIENT'] = $client;
-                    $responce = $sendinModule->emailAdd($post_email, $resp, $post_newsletter, $list_id);   
+                    else {
+                        $client = 0;
+                        $customerData = array();
+                        $subsdata = Mage::getModel('newsletter/subscriber')->loadByEmail($email)->getData();
+                        $resp = $sendinModule->mergeMyArray($attributesName, $subsdata);
+                        $resp['CLIENT'] = $client;
+                        $responce = $sendinModule->emailAdd($postEmail, $resp, $postNewsLetter, $listId);   
                     }
-				}
-				$sql = 'SELECT `subscriber_email` from '.$tableNewsletter.' where subscriber_email = "'.$post_email.'" ';
-				$custdatanews = $connection->fetchRow($sql);
-				if ($custdata['entity_id'] !='' && $custdatanews['subscriber_email'] == '' )
-				{							
-				$connection->query("insert into ".$tableNewsletter."(store_id, customer_id, subscriber_email, subscriber_status) 
-									values('".$custdata['store_id']."','".$custdata['entity_id']."','".$post_email."','1')");
-				
-				}
-				else
-				{  
-					$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($post_email);
-					$costomer_data->setStatus($temp_sub_status);
-					$costomer_data->setIsStatusChanged(true);
-					$costomer_data->save();
-				}
+                }
+                
+                $querySubscriberEmail = $readDbObject->select()
+                    ->from($tableNewsletter, array('subscriber_email'))
+                    ->where("subscriber_email = ?", $postEmail);
+                $stmtSubscriberEmail = $readDbObject->query($querySubscriberEmail);
+                $customerDataNews = $stmtSubscriberEmail->fetch();
 
-			}
-			else{
-				$responce = $sendinModule->emailDelete($post_email);
-				$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($post_email);
+                if ($customerData['entity_id'] !='' && $customerDataNews['subscriber_email'] == '' ) {                          
+                    $newsLetterData = array(
+                            "store_id" => $customerData['store_id'],
+                            "customer_id" => $customerData['entity_id'],
+                            "subscriber_email" => $postEmail,
+                            "subscriber_status" => 1,
+                    );
+                    $writeDbObject->insert($tableNewsletter, $data);                
+                }
+                else {  
+                    $costomerInformation = Mage::getModel('newsletter/subscriber')->loadByEmail($postEmail);
+                    $costomerInformation->setStatus($templateSubscribeStatus);
+                    $costomerInformation->setIsStatusChanged(true);
+                    $costomerInformation->save();
+                }
 
-				if (!$costomer_data->getStoreId())
-				{
-					$costomer_data->setSubscriberEmail($post_email);
-					$costomer_data->setCustomerId($custdata['entity_id']);
-					$costomer_data->setStoreId($custdata['store_id']);
-				}
-				$costomer_data->setStatus($temp_sub_status);
-				$costomer_data->setIsStatusChanged(true);
-				$costomer_data->save();
-			}
-		}
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}
-	}
-	
-	public function ajaxordersmsAction($sender='', $message='', $number='')
-	{  
-	  $post = $this->getRequest()->getPost();
-		try {
-		if (empty($post))
-			Mage::throwException($this->__('Invalid form data.'));
-		    $number = $post['number'];
-			$charone = substr($number, 0, 1);
-		    $chartwo = substr($number, 0, 2);
-		if ($charone == '0' && $chartwo == '00')
-			$number = $number;
+            }
+            else{
+                $responce = $sendinModule->emailDelete($postEmail);
+                $costomerInformation = Mage::getModel('newsletter/subscriber')->loadByEmail($postEmail);
 
-		if (isset($number))
-		{
-			$adminUserModel = Mage::getModel('admin/user');
-			$userCollection = $adminUserModel->getCollection()->load(); 
-			$admin_data = $userCollection->getData();
-			$firstname = isset($admin_data[0]['firstname'])?$admin_data[0]['firstname']:'';
-			$lastname = isset($admin_data[0]['lastname'])?$admin_data[0]['lastname']:'';
-			$characters = '1234567890';
-			$ref_num = '';
-			for ($i = 0; $i < 9; $i++)
-				$ref_num .= $characters[rand(0, strlen($characters) - 1)];
+                if (!$costomerInformation->getStoreId()) {
+                    $costomerInformation->setSubscriberEmail($postEmail);
+                    $costomerInformation->setCustomerId($customerData['entity_id']);
+                    $costomerInformation->setStoreId($customerData['store_id']);
+                }
+                $costomerInformation->setStatus($templateSubscribeStatus);
+                $costomerInformation->setIsStatusChanged(true);
+                $costomerInformation->save();
+            }
+        }
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }
+    }
+    
+    public function ajaxordersmsAction($sender='', $message='', $number='')
+    {  
+      $postData = $this->getRequest()->getPost();
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            $number = $postData['number'];
+            $charone = substr($number, 0, 1);
+            $chartwo = substr($number, 0, 2);
+            if ($charone == '0' && $chartwo == '00') { 
+                $number = $number;
+            }
 
-				$locale = Mage::app()->getLocale()->getLocaleCode();
-				if ($locale == 'fr_FR')
-					$ord_date = date('d/m/Y');
-				else
-				$ord_date = date('m/d/Y');
-				$orderprice = rand(10, 1000);
-				$total_pay = $orderprice.'.00'.' '.Mage::app()->getStore()-> getCurrentCurrencyCode();
-				$msgbody = $post['message'];
-				$fname = str_replace('{first_name}', $firstname, $msgbody);
-				$lname = str_replace('{last_name}', $lastname."\r\n", $fname);
-				$procuct_price = str_replace('{order_price}', $total_pay, $lname);
-				$order_date = str_replace('{order_date}', $ord_date."\r\n", $procuct_price);
-				$msgbody = str_replace('{order_reference}', $ref_num, $order_date);
-				$arr = array();
-				$arr['to'] = $number;
-				$arr['from'] = isset($post['sender'])?$post['sender']:'';
-				$arr['text'] = $msgbody;
+            if (isset($number)) {
+                $adminUserModel = Mage::getModel('admin/user');
+                $userCollection = $adminUserModel->getCollection()->load(); 
+                $adminData = $userCollection->getData();
+                $firstname = isset($adminData[0]['firstname']) ? $adminData[0]['firstname'] : '';
+                $lastname = isset($adminData[0]['lastname']) ? $admin_data[0]['lastname'] : '';
+                $characters = '1234567890';
+                $referenceNumber = '';
+                for ($i = 0; $i < 9; $i++) {
+                    $referenceNumber .= $characters[rand(0, strlen($characters) - 1)];
+                }
 
-				$result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);
-				if (isset($result->status) && $result->status == 'OK')
-					echo  'OK';
-				else
-				echo  'KO';
-		}
+                $localeCode = Mage::app()->getLocale()->getLocaleCode();
+                $orderDateFormat = ($localeCode == 'fr_FR') ? date('d/m/Y') : date('m/d/Y');
+                $orderprice = rand(10, 1000);
+                $totalPay = $orderprice.'.00'.' '.Mage::app()->getStore()-> getCurrentCurrencyCode();
+                $firstName = str_replace('{first_name}', $firstname, $postData['message']);
+                $lastName = str_replace('{last_name}', $lastname."\r\n", $firstName);
+                $procuctPrice = str_replace('{order_price}', $totalPay, $lastName);
+                $orderDate = str_replace('{order_date}', $orderDateFormat."\r\n", $procuctPrice);
+                $msgbody = str_replace('{order_reference}', $referenceNumber, $orderDate);
+                $smsData = array();
+                $smsData['to'] = $number;
+                $smsData['from'] = isset($postData['sender']) ? $postData['sender'] : '';
+                $smsData['text'] = $msgbody;
 
-		}
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}        
-	}
+                $sendSmsResponce = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($smsData);
+                if (isset($sendSmsResponce['status']) && $sendSmsResponce['status'] == 'OK') {
+                    echo  'OK';
+                }
+                else {
+                    echo  'KO';
+                }
+            }
+        }
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }        
+    }
 
-	public function ajaxordershippedAction($sender='', $message='', $number='')
-	{
-		$post = $this->getRequest()->getPost();
-		try {
-		if (empty($post))
-			Mage::throwException($this->__('Invalid form data.'));
-		    $number = $post['number'];
-			$charone = substr($number, 0, 1);
-		    $chartwo = substr($number, 0, 2);
+    public function ajaxordershippedAction($sender='', $message='', $number='')
+    {
+        $postData = $this->getRequest()->getPost();
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
 
-			if ($charone == '0' && $chartwo == '00')
-				$number = $number;
+            $number = $postData['number'];
+            $charone = substr($number, 0, 1);
+            $chartwo = substr($number, 0, 2);
 
-		if (isset($number))
-		{ 		
-			$adminUserModel = Mage::getModel('admin/user');
-			$userCollection = $adminUserModel->getCollection()->load(); 
-			$admin_data = $userCollection->getData();
-			$firstname = isset($admin_data[0]['firstname'])?$admin_data[0]['firstname']:'';
-			$lastname = isset($admin_data[0]['lastname'])?$admin_data[0]['lastname']:'';
-			$characters = '1234567890';
-			$ref_num = '';
-			for ($i = 0; $i < 9; $i++)
-				$ref_num .= $characters[rand(0, strlen($characters) - 1)];
+            if ($charone == '0' && $chartwo == '00') {
+                $number = $number;
+            }
 
-			$locale = Mage::app()->getLocale()->getLocaleCode();
-			if ($locale == 'fr_FR')
-				 $ord_date = date('d/m/Y');
-				 else
-				 $ord_date = date('m/d/Y');
-			$orderprice = rand(10, 1000);
-			$total_pay = $orderprice.'.00'.' '.Mage::app()->getStore()-> getCurrentCurrencyCode();
-			$msgbody = $post['message'];
-			$fname = str_replace('{first_name}', $firstname, $msgbody);
-			$lname = str_replace('{last_name}', $lastname."\r\n", $fname);
-			$procuct_price = str_replace('{order_price}', $total_pay, $lname);
-			$order_date = str_replace('{order_date}', $ord_date."\r\n", $procuct_price);
-			$msgbody = str_replace('{order_reference}', $ref_num, $order_date);
-			$arr = array();
-			$arr['to'] = $number;
-			$arr['from'] = !empty($post['sender'])?$post['sender']:'';
-			$arr['text'] = $msgbody;
+            if (isset($number)) {       
+                $adminUserModel = Mage::getModel('admin/user');
+                $userCollection = $adminUserModel->getCollection()->load(); 
+                $adminData = $userCollection->getData();
+                $firstname = isset($adminData[0]['firstname'])?$adminData[0]['firstname']:'';
+                $lastname = isset($adminData[0]['lastname'])?$adminData[0]['lastname']:'';
+                $characters = '1234567890';
+                $referenceNumber = '';
+                for ($i = 0; $i < 9; $i++) {
+                    $referenceNumber .= $characters[rand(0, strlen($characters) - 1)];
+                }
 
-			$result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);	
-			if (isset($result->status) && $result->status == 'OK')
-			echo 'OK';
-			else
-			echo  'KO';exit;
-		}
-		
-		}
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}        
-	}
+                $localeCode = Mage::app()->getLocale()->getLocaleCode();
+                $orderDateFormat = ($localeCode == 'fr_FR') ? date('d/m/Y') :  date('m/d/Y') ;
+                
+                $orderprice = rand(10, 1000);
+                $totalPay = $orderprice.'.00'.' '.Mage::app()->getStore()-> getCurrentCurrencyCode();
+                $msgbody = $postData['message'];
+                $firstName = str_replace('{first_name}', $firstname, $msgbody);
+                $lastName = str_replace('{last_name}', $lastname."\r\n", $firstName);
+                $procuctPrice = str_replace('{order_price}', $totalPay, $lastName);
+                $orderDate = str_replace('{order_date}', $orderDateFormat."\r\n", $procuctPrice);
+                $msgbody = str_replace('{order_reference}', $referenceNumber, $orderDate);
+                $smsData = array();
+                $smsData['to'] = $number;
+                $smsData['from'] = !empty($postData['sender'])?$postData['sender']:'';
+                $smsData['text'] = $msgbody;
 
-	public function ajaxsmscampaignAction($sender='', $message='', $number='')
-	{
-		$post = $this->getRequest()->getPost();
-		try {
-		if (empty($post))
-			Mage::throwException($this->__('Invalid form data.'));
-		    $number = $post['number'];
-			$charone = substr($number, 0, 1);
-		$chartwo = substr($number, 0, 2);
-		if ($charone == '0' && $chartwo == '00')
-		    $number = $number;
+                $sendSmsResponce = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($smsData);   
+                if (isset($sendSmsResponce['status']) && $sendSmsResponce['status'] == 'OK') {
+                    echo 'OK';
+                }
+                else {
+                    echo  'KO';
+                }
+                exit;
+            }
+        
+        }
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }        
+    }
 
-		if (isset($number))
-		{
-			$adminUserModel = Mage::getModel('admin/user');
-			$userCollection = $adminUserModel->getCollection()->load(); 
-			$admin_data = $userCollection->getData();
-			$firstname = isset($admin_data[0]['firstname'])?$admin_data[0]['firstname']:'';
-			$lastname = isset($admin_data[0]['lastname'])?$admin_data[0]['lastname']:'';
-			$msgbody = $post['message'];
-			$fname = str_replace('{first_name}', $firstname, $msgbody);
-			$msgbody = str_replace('{last_name}', $lastname."\r\n", $fname);
-			$arr = array();
-			$arr['to'] = $number;
-			$arr['from'] = !empty($post['sender'])?$post['sender']:'';
-			$arr['text'] = $msgbody;			
-			$result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);			
-			if (isset($result->status) && $result->status == 'OK')
-				echo  'OK';
-			else
-			echo  'KO';	
-		}
-		
-		}
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}        
-	}
-	
+    public function ajaxsmscampaignAction($sender='', $message='', $number='')
+    {
+        $postData = $this->getRequest()->getPost();
+        try {
+            if (empty($postData)) {
+                Mage::throwException($this->__('Invalid form data.'));
+            }
+            $number = $postData['number'];
+            $charone = substr($number, 0, 1);
+            $chartwo = substr($number, 0, 2);
+            if ($charone == '0' && $chartwo == '00') {
+                $number = $number;
+            }
+            if (isset($number)) {
+                $adminUserModel = Mage::getModel('admin/user');
+                $userCollection = $adminUserModel->getCollection()->load(); 
+                $adminData = $userCollection->getData();
+                $firstname = isset($adminData[0]['firstname'])?$adminData[0]['firstname']:'';
+                $lastname = isset($adminData[0]['lastname'])?$adminData[0]['lastname']:'';
+                $msgbody = $postData['message'];
+                $firstName = str_replace('{first_name}', $firstname, $msgbody);
+                $msgbody = str_replace('{last_name}', $lastname."\r\n", $firstName);
+                $smsData = array();
+                $smsData['to'] = $number;
+                $smsData['from'] = !empty($postData['sender'])?$postData['sender']:'';
+                $smsData['text'] = $msgbody;            
+                $sendSmsResponce = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($smsData);           
+                if (isset($sendSmsResponce['status']) && $sendSmsResponce['status'] == 'OK') {
+                    echo  'OK';
+                }
+                else {
+                    echo  'KO'; 
+                }
+            }
+        }
+        catch (Exception $exception) {
+            echo $this->__($exception->getMessage());
+        }        
+    }
 }

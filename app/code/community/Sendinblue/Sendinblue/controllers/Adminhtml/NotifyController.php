@@ -10,11 +10,11 @@
 
 class Sendinblue_Sendinblue_Adminhtml_NotifyController extends Mage_Adminhtml_Controller_Action
 {
-	public function indexAction()
-	{
-		$responce = Mage::getModel('sendinblue/sendinblue')->notifySmsEmail();
-		$msg_disp = $this->__('The CRON has been well executed.');
-		Mage::getModel('adminhtml/session')->addSuccess($msg_disp);
-		$this->_redirect("sendinblue/adminhtml_myform/");
-	}
+    public function indexAction()
+    {
+        $responce = Mage::getModel('sendinblue/sendinblue')->notifySmsEmail();
+        $messageDisplay = $this->__('The CRON has been well executed.');
+        Mage::getModel('adminhtml/session')->addSuccess($messageDisplay);
+        $this->_redirect("sendinblue/adminhtml_myform/");
+    }
 }
