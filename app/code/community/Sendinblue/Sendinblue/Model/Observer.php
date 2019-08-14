@@ -113,7 +113,7 @@ class Sendinblue_Sendinblue_Model_Observer
 		$customer_addr = array();
 		$customer_addr_data = array();
 		foreach ($collectionAddress as $customerPhno) {
-			$customer_addr = $customerPhno->getData();	
+			$customer_addr = $customerPhno->getData();
 			if (!empty($customer_addr['telephone']))
 			{
 				if(!empty($customer_addr['country_id']))
@@ -121,16 +121,16 @@ class Sendinblue_Sendinblue_Model_Observer
 					$country_code = $sendinModule->getCountryCode($customer_addr['country_id']);
 					$customer_addr['telephone'] = $sendinModule->checkMobileNumber($customer_addr['telephone'], $country_code);
 				}
-			}		
+			}
 		}
 		$customer_addr_data = array_merge($customer_addr, $customerData);
 		if (!empty($customerData['firstname']) && !empty($customerData['lastname']))
 			$client = 1;
 		else
 			$client = 0;
-			
+
 		$is_subscribed = !empty($customer_addr_data['is_subscribed'])?$customer_addr_data['is_subscribed']:$params['is_subscribed'];
-		
+
 		if (!empty($customerData['firstname']) || !empty($customer_addr['telephone']) || !empty($email))
 		{
 			$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
@@ -229,29 +229,19 @@ class Sendinblue_Sendinblue_Model_Observer
 		$data = $observer->subscriber;
 		$params = Mage::app()->getRequest()->getParams();
 		$params = empty($params)?array():$params;
-		if (!isset($params['firstname']) && !isset($params['lastname']))
+		if (empty($params['firstname']) && empty($params['lastname']))
 		{
 			$sibObj = Mage::getModel('sendinblue/sendinblue');
-		
 			if($data->subscriber_status == 3)
 				$sibObj->emailDelete($data->subscriber_email);
-			else if ($data->subscriber_status == 1)
+			elseif ($data->subscriber_status == 1)
 			{
 				$sibObj->emailSubscribe($data->subscriber_email);
+				if(!empty($params['email']))
 				$sibObj->sendWsTemplateMail($data->subscriber_email);
+
 			}
 		}
 	}
-	public function disableCache(Varien_Event_Observer $observer)
-    {
-		$action = $observer->getEvent()->getControllerAction();
-
-		if ($action instanceof Sendinblue_Sendinblue_Adminhtml_MyformController) { // eg. Mage_Catalog_ProductController
-			$request = $action->getRequest();
-			$cache = Mage::app()->getCacheInstance();
-			Mage::getSingleton('core/session')->addSuccess('Done successfully');
-			$cache->banUse('full_page'); // Tell Magento to 'ban' the use of FPC for this request
-		}
-    }
 
 }

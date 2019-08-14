@@ -52,7 +52,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             if (preg_match('/^'.$call_prefix.'/', $number))
                     return '00'.$number;
 
-            else if ($charone == '0' && $chartwo != '00')
+            elseif ($charone == '0' && $chartwo != '00')
             {
                 if (preg_match('/^0'.$call_prefix.'/', $number))
                         return '00'.substr($number, 1);
@@ -62,19 +62,19 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             elseif ($chartwo == '00')
             {
             if (preg_match('/^00'.$call_prefix.'/', $number))
-                    return $number;
+				return $number;
             else
             return '00'.$call_prefix.substr($number, 2);
             }
             elseif ($charone == '+')
             {
             if (preg_match('/^\+'.$call_prefix.'/', $number))
-                    return '00'.substr($number, 1);
+				return '00'.substr($number, 1);
             else
             return '00'.$call_prefix.substr($number, 1);
             }
             elseif ($charone != '0')
-            return '00'.$call_prefix.$number;
+			return '00'.$call_prefix.$number;
 	}
     /**
      * functions used for getting module status
@@ -125,7 +125,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		if (!$status)
 			return false;
 		return $status;
-	}    
+	}
 	/**
 	* functions used for getting Notify email limit 
 	*/
@@ -146,6 +146,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	* functions used for getting campaign sms status
 	*/
@@ -156,6 +157,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	* functions used for getting send sms order subject
 	*/
@@ -166,6 +168,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	* functions used for getting order sms message
 	*/
@@ -176,6 +179,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	*functions used for getting send sms shiping subject
 	*/
@@ -186,6 +190,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	*functions used for getting shiping sms message
 	*/
@@ -196,6 +201,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	* functions used for get api key
 	*/
@@ -206,6 +212,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $apikey;
 	}
+
 	/**
 	* functions used for get SMPT password
 	*/
@@ -216,6 +223,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $smtpPassword;
 	}
+
 	/**
 	* functions used for get user name
 	*/
@@ -226,6 +234,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $userName;
 	}
+
 	/**
 	* functions used for getting smtp status
 	*/
@@ -236,18 +245,20 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $status;
 	}
+
 	/**
 	* functions used for getting tracking status
 	*/
 	public function getTrackingStatus()
 	{
-		$status = $this->getSendinTrackingCodeStatus('code', Mage::app()->getStore()->getStoreId());
+                $status = $this->getSendinTrackingCodeStatus('code', Mage::app()->getStore()->getStoreId());
 		if (!$status) {
 			return false;
 		}
 		return $status;
 	}
-        	/**
+
+    /**
 	* functions used for getting tracking status
 	*/
 	public function getTrackingHistoryStatus()
@@ -258,6 +269,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		}
 		return $status;
 	}
+
 	/**
 	* functions used for getting userlists
 	*/
@@ -268,6 +280,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $userlist;
 	}
+
 	/**
 	* functions used for getting importOldSubscribers status
 	*/
@@ -278,6 +291,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $importStatus;
 	}
+
 	/**
 	* functions used for get templateid
 	*/
@@ -288,6 +302,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		return $TemplateId;
 	}
+
 	/**
 	* functions used for getting general config
 	*/
@@ -295,6 +310,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	{
 		return Mage::getStoreConfig('sendinblue/'.$field, $store);
 	}
+
     /**
      * functions used for get sendinsmtp status
      */
@@ -302,6 +318,10 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	{
 		return Mage::getStoreConfig('sendinblue/smtp/'.$field, $store);
 	}
+
+	 /**
+     * functions used for get sendinblue email status
+     */
     public function getSyncronizeStatus()
 	{
 		return $this->getGeneralConfig('syncronize', Mage::app()->getStore()->getStoreId());
@@ -313,13 +333,15 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	{
 		return Mage::getStoreConfig('sendinblue/tracking/'.$field, $store);
 	}
-        /**
+
+    /**
 	* functions used for get sendin tracking history status
 	*/
 	public function getSendinTrackingHistoryStatus($field, $store = null)
 	{
 		return Mage::getStoreConfig('sendinblue/improt/'.$field, $store);
 	}
+
 	/**
 	* functions used for module functionality
 	*/
@@ -327,6 +349,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	{
 		return $this->lists();
 	}
+
     /**
      * functions used for email adds
      */
@@ -361,9 +384,10 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		} else
 			return false;
 		}
+
 	 /**
-     * functions subscribeuser
-     */
+	 * functions subscribeuser
+	 */
 	public function emailSubscribe($email)
 	{
 		if ($this->module_enable == 1 && $this->getSyncronizeStatus())
@@ -377,7 +401,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				return false;
 			$data = array();
 			$data['key'] = $apikey;
-			$data['webaction']='UPDATE-USER-SUBSCRIPTION-STATUS';
+			$data['webaction'] = 'UPDATE-USER-SUBSCRIPTION-STATUS';
 			$data['timezone'] = $timez;
 			$data['user_status'] = $email.', '.'1'.', '.$tm;
 			return $this->curlRequest($data);
@@ -385,9 +409,9 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return false;
 		}
 
-    /**
-     * functions used for sync data
-     */
+	/**
+	* functions used for sync data
+	*/
 	public function syncData()
 	{ 
 	if ($this->module_enable == 1 && $this->getSyncronizeStatus())
@@ -481,9 +505,10 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         } else
             return false;
     }
-    /**
-     * This method is used used for check api status
-     */
+
+	/**
+	* This method is used used for check api status
+	*/
 	public function checkApikey($api_key)
 	{
 		$params['key'] = $api_key;
@@ -491,9 +516,10 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		if (isset($response->errorMsg) && !empty($response->errorMsg))
 			return $lists['error'] = $response->errorMsg;
 	}
-    /**
-     * functions used for smtp details and order tracking
-     */
+
+	/**
+	* functions used for smtp details and order tracking
+	*/
 	public function SmtpDetailsWithTracking()
 	{
 		$params['key'] = $this->api_key; 
@@ -516,20 +542,21 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         if (isset($response->errorMsg) && !empty($response->errorMsg))
         {
             $this->error_message = $response->errorMsg;
-            $lists['error']     = $response->errorMsg;
+            $lists['error'] = $response->errorMsg;
         } else
         {
-            $i     = 0;
+            $i = 0;
             $lists = array();
             foreach ($response->result as $list_data)
             {
-                $lists[$i]['id']   = $list_data->id;
+                $lists[$i]['id'] = $list_data->id;
                 $lists[$i]['name'] = $list_data->name;
                 $i++;
             }
         }
         return $lists;
     }
+
     /**
      * Fetches the list status of the user from the Sendinblue platform.
      */
@@ -537,12 +564,13 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     {
         if ($this->module_enable == 1)
         {
-            $params         = array();
+            $params = array();
             $params['list'] = 'ALL';
             return $this->callServer('DISPLAYLISTDATA', $params);
         } else
             return Mage::getSingleton('core/session')->addError('Sendinblue not enabled');
     }
+
     /**
      * Fetches all folders and all list within each folder of the user's Sendinblue 
      * account and displays them to the user. 
@@ -661,8 +689,8 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         }
         else
 		$list_name = 'magento';
-        $params                = array();
-        $params['listname']    = $list_name;
+        $params = array();
+        $params['listname'] = $list_name;
         $params['list_parent'] = $response;
         $list_response = $this->callServer('NEWLIST', $params);
         $this->sendAllMailIDToSendin($list_response);
@@ -683,9 +711,9 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     }
 
 	/**
-     * Fetch attributes name and type
-     * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
-     */
+	* Fetch attributes name and type
+	* on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
+	*/
    public function allAttributesType()
    {
 		if ($this->user_language == 'fr')
@@ -695,20 +723,20 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		return $params;
     }
 
-    /**
-     * Fetch all Transactional Attributes 
-     * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
-     */
+	/**
+	* Fetch all Transactional Attributes 
+	* on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
+	*/
    public function allTransactionalAttributes()
    {
 		$params = array('ORDER_ID'=>'id', 'ORDER_DATE'=>'date', 'ORDER_PRICE'=>'number');
 		return $params;
     }
 
-     /**
-     * Create Normal, Transactional, Calculated and Global attributes and their values
-     * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
-     */
+	/**
+	* Create Normal, Transactional, Calculated and Global attributes and their values
+	* on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
+	*/
    public function createAttributesName()
    {
         $params = array();
@@ -815,15 +843,14 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				$email = $this->getNotifyEmailStatus();
 				
 				$email_template = Mage::getModel('core/email_template')->loadDefault('notification_template');
-				$temp=$email_template->template_text;
+				$temp = $email_template->template_text;
 				$web_site = Mage::app()->getWebsite()->getName();
 				$credit = $this->getSmsCredit();
 				preg_match_all('#{(.*)}#', $temp, $match);
 				
-					$temp_params = array(
-					'{site_name}'=>$web_site,
-					'{present_credit}'=>$credit
-					
+				$temp_params = array(
+				'{site_name}'=>$web_site,
+				'{present_credit}'=>$credit					
 				);
 				foreach($match[0] as $var=>$value){ 
 					$temp = preg_replace('#'.$value.'#',$temp_params[$value],$temp);
@@ -833,7 +860,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				$email_template->setSenderName($sender_name);
 				$email_template->setSenderEmail($sender_email);
 				$email_template->setTemplateSubject($email_template_variables['text0']);
-				return $email_template->send($email, '', $email_template_variables);
+				$email_template->send($email, '', $email_template_variables);
 			}			
 		}
 		else
@@ -921,7 +948,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $customer_addr_data = array();
         $attributesName = $this->allAttributesName();
         $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToSelect('created_in');
-		$customerAddressCollection = Mage::getModel('customer/address')->getCollection();
+		$customerAddressCollection = Mage::getModel('customer/address');
         foreach ($collection as $customer)
         {
             $start_detail = array();
@@ -933,7 +960,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             $cid = $respone['entity_id'];
             $user_lang = $respone['created_in'];
 
-            $collectionAddress = $customerAddressCollection->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$cid);
+            $collectionAddress = $customerAddressCollection->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$cid);
             $telephone = '';
             $customer_addr = array();
             foreach ($collectionAddress as $customerPhno) {
@@ -967,10 +994,10 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      if (!is_dir(Mage::getBaseDir('media').'/sendinblue_csv'))
         mkdir(Mage::getBaseDir('media').'/sendinblue_csv', 0777, true);
 
-         $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
-         $key_value = array_keys($attributesName);
-         $key_value[] = 'EMAIL';
-         fwrite($handle, implode(',', $key_value)."\n");
+		$handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
+		$key_value = array_keys($attributesName);
+		$key_value[] = 'EMAIL';
+		fwrite($handle, implode(',', $key_value)."\n");
 
 		foreach ($resp as $newsdata)
 		{
@@ -999,19 +1026,17 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $attributesName['customer_id'] = 'entity_id';
         
         $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
-		$customerAddressCollection = Mage::getModel('customer/address')->getCollection();
+		$customerAddressCollection = Mage::getModel('customer/address');
         foreach ($collection as $customer)
         {
             $start_detail = array();
-            $resp = array();
             $respone = array();
-
             $respone = $customer->getData();
             $email  = $respone['email'];
             $cid = $respone['entity_id'];
             $user_lang = $respone['created_in'];
 
-            $collectionAddress = $customerAddressCollection->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
+            $collectionAddress = $customerAddressCollection->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
             $telephone = '';
             $customer_addr = array();
             foreach ($collectionAddress as $customerPhno) {
@@ -1025,19 +1050,21 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             }
             $customer_addr_data[$email] = array_merge($respone, $customer_addr);
         }
+
         $newsletterArr = array();
         $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
 		$cnt = 0;
+		$resp = array();
         foreach ( $newsletter->getItems() as $subscriber)
         {
 			$subsdata = $subscriber->getData();
             $subscriber_email = $subsdata['subscriber_email'];
             $subscriber_status = $subsdata['subscriber_status'];
 			if ( !empty($customer_addr_data[$subscriber_email]) ) {
-			$customer_addr_data[$subscriber_email]['email'] = $subscriber_email;
-			$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email]);
-			$resp[$cnt]['subscriber_status'] = $subscriber_status;
-			$resp[$cnt]['email'] = $subscriber_email;
+				$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email]);
+				unset($customer_addr_data[$subscriber_email]);
+				$resp[$cnt]['subscriber_status'] = $subscriber_status;
+				$resp[$cnt]['email'] = $subscriber_email;
 			}
 			else
 			{
@@ -1047,6 +1074,15 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				$resp[$cnt]['email'] = $subscriber_email;
 			}
                 $cnt++;
+		}
+		if (count($customer_addr_data) > 0) {
+			foreach ($customer_addr_data as $email => $cVal) {
+				$resp[$cnt] = $this->merge_my_array($attributesName, $cVal);
+				$resp[$cnt]['subscriber_status'] = 3;
+				$resp[$cnt]['email'] = $email;
+
+				$cnt++;
+			}
 		}
 		return array_slice($resp, $start, $per_page, true);		
     }
@@ -1217,7 +1253,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $customer_addr_data = array();
         $attributesName = $this->allAttributesName();
         $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToSelect('created_in');
-		$customerAddressCollection = Mage::getModel('customer/address')->getCollection();
+		$customerAddressCollection = Mage::getModel('customer/address');
         foreach ($collection as $customer)
         {
             $start_detail = array();
@@ -1229,7 +1265,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             $cid = $respone['entity_id'];
             $user_lang = $respone['created_in'];
 
-            $collectionAddress = $customerAddressCollection->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$cid);
+            $collectionAddress = $customerAddressCollection->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$cid);
             $telephone = '';
             $customer_addr = array();
             foreach ($collectionAddress as $customerPhno) {
@@ -1274,7 +1310,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			{ 
 				$data[$i]= $result; 
 			}
-			$i++;
+			  $i++;
 		}
 		return json_encode($data);
     }
@@ -1302,8 +1338,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		$user = $this->getUserName();
 		$to = str_replace('+', '%2B', $to);
 		$temp_id_value = $this->getTemplateId();
-		// should be the campaign id of template created on mailin. Please remember this template should be active than only it will be sent, otherwise it will return error.
-		$templateid = !empty($temp_id_value) ? $temp_id_value : '';
+		$templateid = !empty($temp_id_value) ? $temp_id_value : ''; // should be the campaign id of template created on mailin. Please remember this template should be active than only it will be sent, otherwise it will return error.
 
 		$post_data['to'] = $to;
 		$post_data['key'] = $smtpPassword;

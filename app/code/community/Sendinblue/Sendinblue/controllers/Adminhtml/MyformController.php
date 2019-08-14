@@ -447,8 +447,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 				}
 
 				foreach ($results as $i => $result)
-				{ 
-
+				{
 					if(!empty($result['shipping_telephone']) && !empty($result['shipping_country_code']))
 					{
 						$country_code = $sendinModule->getCountryCode($result['shipping_country_code']);
@@ -504,7 +503,6 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 				// List id should be optional
 
 				$data_responce = $sendinModule->curlRequest($data);
-
 				$msgbody = $post['sender_campaign_message'];
 				$value_langauge = $sendinModule->getApiConfigValue();
 				if ($value_langauge->language == 'fr')
@@ -530,7 +528,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 				$arr['bat_sent'] = '';
 				$arr['listids'] = $list_id; // mandatory if SMS campaign is scheduled
 				$arr['exclude_list'] = '';
-				$arr['schedule'] = date('Y-m-d H:i:s', time() + 18000);
+				$arr['schedule'] = date('Y-m-d H:i:s', time() + 36000);
 
 				$data_camp = $sendinModule->curlRequest($arr);
 

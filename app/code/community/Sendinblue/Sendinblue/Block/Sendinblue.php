@@ -62,7 +62,7 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
 			$msgbody = str_replace('{order_reference}', $ref_num, $order_date);
 
 			$arr = array();
-			$arr['to'] = $mobile;
+			$arr['to'] = $dataDisplay['telephone'];
 			$arr['from'] = $sendinblueData->getSendSmsOrderSubject();
 			$arr['text'] = $msgbody;
 			$responce = $sendinblueData->sendSmsApi($arr);

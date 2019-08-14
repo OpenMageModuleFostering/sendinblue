@@ -110,7 +110,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 				fputcsv($handle, $key_value);
 				fclose($handle);
 			}
-		}
+			}
 		catch (Exception $e)
         {
            echo $this->__($e->getMessage());
@@ -130,7 +130,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 				fputcsv($handle, $key_value);
 				fclose($handle);
 			}
-		}
+			}
 		catch (Exception $e)
         {
            echo $this->__($e->getMessage());
@@ -158,12 +158,12 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 			
 			$collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
 			
-			$salesOrderColection = Mage::getModel('sales/order')->getCollection()
+			$salesOrderColection = Mage::getModel('sales/order');
 			foreach ($collection as $customer)
 			{
 				$cid = $customer->getData('entity_id');
 				$email = $customer->getData('email');
-				$total_orders = $salesOrderColection->addFieldToFilter('customer_id', $cid); 
+				$total_orders = $salesOrderColection->getCollection()->addFieldToFilter('customer_id', $cid); 
 				$orderCnt = $total_orders->count();
 				if ($orderCnt > 0)
 				{
