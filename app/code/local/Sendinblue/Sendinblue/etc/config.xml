@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Sendinblue_Sendinblue>
-            <version>1.1.6</version>
+            <version>1.1.7</version>
             <platform>ce</platform>
         </Sendinblue_Sendinblue>
     </modules>
@@ -301,16 +301,7 @@
                 </observers>
             </controller_action_postdispatch_newsletter_subscriber_new>
 			
-			<!--use when new user register check (is_subscribed = 1)-->
-			<checkout_submit_all_after>
-					<observers>
-						<sendinblue_sendinblue_model_observer>
-							<class>Sendinblue_Sendinblue_Model_Observer</class>
-							<method>ordersucess</method>
-						</sendinblue_sendinblue_model_observer>
-					</observers>
-				</checkout_submit_all_after>	          	
-      	
+			<!--use when new user register check (is_subscribed = 1)-->      	
 		</events>
 		
 		 <layout>

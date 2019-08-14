@@ -13,7 +13,7 @@ class Sendinblue_Sendinblue_Adminhtml_SyncController extends Mage_Adminhtml_Cont
 	public function indexAction()
 	{   
 	    $responce = Mage::getModel('sendinblue/sendinblue')->syncData();
-		$this->loadLayout()->_setActiveMenu('system')->_addContent()->renderLayout();
+		
 		$msg_disp = $this->__('The CRON has been well executed.');
 		Mage::getSingleton('adminhtml/session')->addSuccess($msg_disp);
 		$this->_redirect("sendinblue/adminhtml_myform/");

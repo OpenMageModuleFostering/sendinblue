@@ -8,7 +8,7 @@
 * needs then we can't provide a technical support.
 **/
 ?>
-<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" />
 <script>
 	var selectoption = "<?php echo $this->__('Select option'); ?>";
 	var selected = "<?php echo $this->__('Selected'); ?>";
@@ -116,6 +116,7 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
 <?php if ($api_key != '') { ?>
 <div class="sendin_row alldiv" <?php echo $style; ?> >
 <form id="edit_form" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/syncronizepost'); ?>">
+
 	<div class="section-config active">
 			<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />		  
 			<fieldset id="my-fieldset" class="fields">
@@ -158,13 +159,15 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
                                 	<td><label><?php echo $this->__('Manage email template'); ?></label></td>
 									<td> <select  name="template" id="template" style="width: 230.833px;" class ="ui-widget ui-state-default ui-corner-all">
 										<option value=""><?php echo $this->__('Select template'); ?></option>
-                                    <?php $templatelist = Mage::getModel('sendinblue/sendinblue')->templateDisplay();
+                                    <?php
+                                    $templatelist = Mage::getModel('sendinblue/sendinblue')->templateDisplay();
+
 									if (!empty($templatelist->result->campaign_records))
 									{
 									foreach ($templatelist->result->campaign_records as $template_data)
 									{ if ($template_data->templ_status === 'Active')
 									{ ?>                        
-                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getModel('sendinblue/sendinblue')->getTemplateId()) echo 'selected = "selected"' ?> ><?php echo $template_data->campaign_name; ?></option>					
+                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getModel('sendinblue/sendinblue')->getTemplateId()) echo 'selected = "selected"'; ?> ><?php echo $template_data->campaign_name; ?></option>					
                                     <?php }}} ?>
                                    </select>
 
@@ -177,6 +180,19 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
                                     <input type="submit" class="btn" name="syncronizeSubmit" value ="<?php echo $this->__('Update'); ?>" /></div>
                                 </td>
                                 </tr>
+                                </form>
+                                
+                                <?php if(Mage::getModel('sendinblue/sendinblue')->getImportOldSubsStatus()==1){ ?>
+                                <form id="reimport_form" name="reimport_form" method="post" action="<?php echo $this->getUrl('*/*/reimportpost'); ?>">
+								<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+								<tr>
+                                <td>&nbsp;</td>
+                                <td class="a-left">
+                                    <div class="btnmrgn-right">										
+                                    <input type="submit" class="btn" name="importoldSubmit" value ="<?php echo $this->__('Import Old Subscribers'); ?>" /></div>
+                                </td>
+                                </tr></form>
+                                 <?php } ?>
                                 <tr><td colspan="2">
 						<?php echo $this->__('To synchronize the emails of your customers from SendinBlue platform to your e-commerce website, you should run '); ?><a href="<?php echo Mage::helper("adminhtml")->getUrl("sendinblue/adminhtml_sync/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a><?php echo $this->__('each day'); ?><span class="toolTip" title="<?php echo $this->__('Note that if you change the name of your Shop (currently ');?><?php echo ucfirst(Mage::app()->getFrontController()->getRequest()->getModuleName());?><?php echo $this->__(') the token value changes.'); ?>">&nbsp;</span>
                         </td></tr>
@@ -188,7 +204,7 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
 				</table>
 			</fieldset>
 	</div>
-</form>
+
 </div>
 <?php 
 }
@@ -247,7 +263,7 @@ $style_smtp = '';
 						<span title="<?php echo $this->__('This feature will allow you to transfer all your customers orders from Magento into SendinBlue to implement your email marketing strategy.'); ?>" class="toolTip">&nbsp;</span>
 						</td>	
 					</tr>
-                                        <?php //echo Mage::getModel('sendinblue/sendinblue')->getTrackingStatus();die;  
+                                        <?php  
                                          if (Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==1 && Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus()==1)
                                                 $style_track = '';
                                                 else

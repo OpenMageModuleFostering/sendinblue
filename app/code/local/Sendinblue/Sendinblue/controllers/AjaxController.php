@@ -14,7 +14,10 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
     {
         $this->loadLayout();
         $this->renderLayout();
-        Mage::getModel('sendinblue/sendinblue')->createFolderCaseTwo();
+        $params = Mage::app()->getRequest()->getParams();
+		$params = empty($params)?array():$params;
+		if (isset($params['sendin_apikey']) && $params['sendin_apikey'] != '')
+			$this->CreateFolderCaseTwo();
     }
 
     public function campaignAction()
@@ -168,7 +171,7 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 				$curl_responce = Mage::getModel('sendinblue/sendinblue')->curlRequest($data);
 				$user_status = json_decode($curl_responce);
 			}
-			if ($user_status->result != '')
+			if (isset($user_status->result) != '')
 			{
 			foreach($total_orders as $order_data)
 			{
@@ -320,16 +323,16 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 				}
 				$collection = Mage::getModel('sendinblue/sendinblue')->getNewsletterSubscribe($start, $per_page);
 				$sendin_status = Mage::getModel('sendinblue/sendinblue')->checkUserSendinStatus($collection);
-				$sendin_result = $sendin_status['result'];
-				if (count($collection) != 0)
+				$sendin_result = isset($sendin_status['result'])?$sendin_status['result']:'';
+				if (count($collection) > 0)
 				 {
 					 $i = 1;
 					 $msg = '';
 					foreach ($collection as $subscriber)
 					{
-						$email = $subscriber['email'];
-						$phone = !empty($subscriber['telephone'])?$subscriber['telephone'] : '';
-						$country_id = !empty($subscriber['country_id'])?$subscriber['country_id'] : '';
+						$email = isset($subscriber['email'])?$subscriber['email']:'';
+						$phone = isset($subscriber['telephone'])?$subscriber['telephone'] : '';
+						$country_id = isset($subscriber['country_id'])?$subscriber['country_id'] : '';
 						if($phone != '')
 						{
 						$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
@@ -338,37 +341,51 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
 							$data = $connection->fetchRow($sql);
 						    $phone = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($phone,$data['country_prefix']);	
 						}
-						if ($subscriber['customer_id'] != 0)
+						if (isset($subscriber['customer_id']) != 0)
 							$client = $yes;
 						else
 							$client = $no;
-						if ($sendin_result[$email]['email_bl'] === 1 || $sendin_result[$email] === null)
-							$show_status = 0;
-						if ($sendin_result[$email]['email_bl'] === 0)
-							 $show_status = 1;
-                                                if ($sendin_result[$email]['sms_bl'] === 1 && $sendin_result[$email]['sms_exist'] != '')
-							$sms_status = 0;
-						if ($sendin_result[$email]['sms_bl'] === 0 && $sendin_result[$email]['sms_exist'] != '')
-							 $sms_status = 1;
-                                                if ($sendin_result[$email]['sms_exist'] == '')
-							 $sms_status = 2;
-                                                if ($sendin_result[$email]['sms_exist'] == '' && $subscriber['telephone'] != '')
-							 $sms_status = 3;
+
+							$show_status = '';
+							$sms_status = '';
+						if(isset($sendin_result[$email])) {
+							$email_bl_value = isset($sendin_result[$email]['email_bl'])?$sendin_result[$email]['email_bl']:'';
+							if ($email_bl_value === 1 || $sendin_result[$email] == null)
+								$show_status = 0;
+							if ($email_bl_value === 0)
+								 $show_status = 1;
+
+								$sms_bl = isset($sendin_result[$email]['sms_bl'])?$sendin_result[$email]['sms_bl']:'';
+								$sms_exist = isset($sendin_result[$email]['sms_exist'])?$sendin_result[$email]['sms_exist']:'';
+								$subs_telephone = isset($subscriber['telephone'])?$subscriber['telephone']:'';
+							if ($sms_bl === 1 && $sms_exist > 0)
+								$sms_status = 0;
+							elseif ($sms_bl === 0 && $sms_exist > 0)
+								 $sms_status = 1;
+							elseif ($sms_exist <= 0 && empty($subs_telephone))
+								 $sms_status = 2;
+							else if ($sms_exist <= 0 && !empty($subs_telephone))
+								$sms_status = 3;
+						}
 						if ($subscriber['subscriber_status'] != 3)
 							$img_magento = '<img src="'.Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN).'adminhtml/default/default/sendinblue/images/enabled.gif" >';
 						else
 							$img_magento = '<img src="'.Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN).'adminhtml/default/default/sendinblue/images/disabled.gif" >';
-                                                if ($sms_status == 1)
+                        
+                        $sms_status = $sms_status >= 0?$sms_status:'';
+
+                        if ($sms_status === 1)
 							$img_sms = '<img src="'.Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN).'adminhtml/default/default/sendinblue/images/enabled.gif" 
 							id="ajax_contact_status_'.$i.'" title="'.$title3.'" >';
-						else  if ($sms_status == 0)
+						else if ($sms_status === 0)
 							$img_sms = '<img src="'.Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN).'adminhtml/default/default/sendinblue/images/disabled.gif" 
 							id="ajax_contact_status_'.$i.'" title="'.$title4.'" >';
-                                                else if ($sms_status == 2 || $sms_status == '')
-                                                        $img_sms = '';
-                                                else if ($sms_status == 3)
-                                                        $img_sms = 'Not synchronized';
-						if ($show_status)
+                        else if ($sms_status === 2 || $sms_status === '')
+                                $img_sms = '';
+                        else if ($sms_status === 3)
+                                $img_sms = 'Not synchronized';
+                            $show_status = !empty($show_status)?$show_status:'0';
+						if ($show_status == 1)
 							$img_sendin = '<img src="'.Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN).'adminhtml/default/default/sendinblue/images/enabled.gif" 
 							id="ajax_contact_status_'.$i.'" title="'.$title1.'" >';
 						else
@@ -418,27 +435,27 @@ class Sendinblue_Sendinblue_AjaxController extends Mage_Core_Controller_Front_Ac
             echo $this->__($e->getMessage());
         }
 	}
-        function ajaxsmssubscribeAction()
+public function ajaxsmssubscribeAction()
+{
+	$post = $this->getRequest()->getPost();
+	try {
+	if (empty($post))
+		Mage::throwException($this->__('Invalid form data.'));
+			$email = $post['email'];
+			//$sms = $post['sms'];
+			$data = array();
+	$data['key'] = Mage::getModel('sendinblue/sendinblue')->getApiKey();
+	$data['webaction'] = 'USERUNSUBSCRIBEDSMS';
+	$data['email'] = $email;
+	Mage::getModel('sendinblue/sendinblue')->curlRequest($data);
+			
+				}
+	catch (Exception $e)
 	{
-		$post = $this->getRequest()->getPost();
-		try {
-		if (empty($post))
-			Mage::throwException($this->__('Invalid form data.'));
-                $email = $post['email'];
-                //$sms = $post['sms'];
-                $data = array();
-		$data['key'] = Mage::getModel('sendinblue/sendinblue')->getApiKey();
-		$data['webaction'] = 'USERUNSUBSCRIBEDSMS';
-		$data['email'] = $email;
-		Mage::getModel('sendinblue/sendinblue')->curlRequest($data);
-                
-                    }
-		catch (Exception $e)
-		{
-			echo $this->__($e->getMessage());
-		}
-	}       
-public function ajaxupdateAction()
+		echo $this->__($e->getMessage());
+	}
+}       
+	public function ajaxupdateAction()
 	{
 		$post = $this->getRequest()->getPost();
 		$tableCustomer = Mage::getSingleton('core/resource')->getTableName('customer/entity');
@@ -446,69 +463,76 @@ public function ajaxupdateAction()
 		try {
 		if (empty($post))
 			Mage::throwException($this->__('Invalid form data.'));
-			$temp_sub_status = ($post['newsletter'] == 0) ? 1 : 3;
-			if (!empty($post['email']) && $post['newsletter'] == 0)
+			$post_email = isset($post['email'])?$post['email']:'';
+			$post_newsletter = isset($post['newsletter'])?$post['newsletter']:'';
+			$temp_sub_status = ($post_newsletter == 0) ? 1 : 3;
+			if (!empty($post_email) && $post_newsletter == 0)
 			{
-				$responce = Mage::getModel('sendinblue/sendinblue')->emailSubscribe($post['email']);
+				$locale = Mage::app()->getLocale()->getLocaleCode();
+				$responce = Mage::getModel('sendinblue/sendinblue')->emailSubscribe($post_email);
                 $responce_data = json_decode($responce);
-				$sql = 'SELECT * from '.$tableCustomer.' where email = "'.$post['email'].'" ';
+
+				$sql = 'SELECT * from '.$tableCustomer.' where email = "'.$post_email.'" ';
 				$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
 				$custdata = $connection->fetchRow($sql);
 
-                                if ($responce_data->errorMsg == 'User not exists')
-                                {
-                                 if ($custdata['entity_id'] != '')
-                                    {
-                                    $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$custdata['entity_id']);
-                                    $telephone = '';
-                                    foreach ($collectionAddress as $customerPhno) {
-                                        $telephone = $customerPhno->getData('telephone');
-                                        $country_id = $customerPhno->getData('country_id');
+              //  if (isset($responce_data->errorMsg) == 'User not exists')
+               // {
+                 if (isset($custdata['entity_id']) != '')
+                    {
+                    $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$custdata['entity_id']);
+                    $telephone = '';
+                    foreach ($collectionAddress as $customerPhno) {
+						$phn_sms = $customerPhno->getData('telephone');
+						$country_id_value = $customerPhno->getData('country_id');
+                        $telephone = !empty($phn_sms) ? $phn_sms : '';
+                        $country_id = !empty($country_id_value) ? $country_id_value : '';
 
-                                    }
+                    }
 
-                                    $customer = Mage::getModel("customer/customer");
-                                    $customer->setWebsiteId(Mage::app()->getWebsite()->getId());
-                                    $customer->loadByEmail($post['email']); //load customer by email id
-                                    $customer_name = $customer->getData(); 
-                                   
-                                   if (!empty($telephone))
-                                    {
-                                      $tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
-									  $sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$country_id.'" ';
-							$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
-							$data = $connection->fetchRow($sql);
-						    $number = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($telephone,$data['country_prefix']);	  
-                                    } 
-                                    $client = 1;
-                                    $telephone = (isset($number))? $number : '';
-                                    $firstname = (isset($customer_name['firstname']))?$customer_name['firstname'] : '';
-                                    $lasttname = (isset($customer_name['lastname']))?$customer_name['lastname'] : '';
-                                    
-                                    $extra = $firstname.'|'.$lasttname.'|'.$client.'|'.$telephone;
+                    $customer = Mage::getModel("customer/customer");
+                    $customer->setWebsiteId(Mage::app()->getWebsite()->getId());
+                    $customer->loadByEmail($post_email); //load customer by email id
+                    $customer_name = $customer->getData();
+                    $user_lang = isset($customer_name['created_in'])?$customer_name['created_in'] : '';
+                   
+                   if (!empty($telephone))
+                    {
+                      $tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
+					  $sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$country_id.'" ';
+					  $connection = Mage::getSingleton('core/resource')->getConnection('core_read');
+					  $data = $connection->fetchRow($sql);
+					  $number = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($telephone,$data['country_prefix']);	  
+                    } 
+                    $client = 1;
+                    $telephone = (isset($number))? $number : '';
+                    $firstname = (isset($customer_name['firstname']))?$customer_name['firstname'] : '';
+                    $lasttname = (isset($customer_name['lastname']))?$customer_name['lastname'] : '';
+                    
+                    $extra = $firstname.'|'.$lasttname.'|'.$user_lang.'|'.$client.'|'.$telephone;
 
-                                    $responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($post['email'], $extra);
-                                  
-                                    }
-                                    else
-                                    {
-                                    $client = 0;
-                                    $extra = ''.'|'.''.'|'.$client.'|'.'';		
-                                    $responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($post['email'], $extra);   
-                                    }
-                                }
-				$sql = 'SELECT * from '.$tableNewsletter.' where subscriber_email = "'.$post['email'].'" ';
+                    $responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($post_email, $extra, $post_newsletter);
+
+                    }
+                    else
+                    {
+                    $client = 0;
+                    $extra = ''.'|'.''.'|'.''.'|'.$client.'|'.'';		
+                    $responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($post_email, $extra, $post_newsletter);   
+                    }
+             //   }
+				$sql = 'SELECT * from '.$tableNewsletter.' where subscriber_email = "'.$post_email.'" ';
 				$custdatanews = $connection->fetchRow($sql);
 				if ($custdata['entity_id'] !='' && $custdatanews['subscriber_email'] == '' )
 				{
 							
 				$connection->query("insert into ".$tableNewsletter."(store_id, customer_id, subscriber_email, subscriber_status) 
-																values('".$custdata['store_id']."','".$custdata['entity_id']."','".$custdata['email']."','1')");
+									values('".$custdata['store_id']."','".$custdata['entity_id']."','".$custdata['email']."','1')");
 				
 				}
 				else
 				{  
-					$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($post['email']);
+					$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($post_email);
 					$costomer_data->setStatus($temp_sub_status);
 					$costomer_data->setIsStatusChanged(true);
 					$costomer_data->save();
@@ -516,9 +540,9 @@ public function ajaxupdateAction()
 
 			}
 			else{
-				$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($post['email']);
-				$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($post['email']);
-				$sql = 'SELECT * from '.$tableCustomer.' where email = "'.$post['email'].'" ';
+				$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($post_email);
+				$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($post_email);
+				$sql = 'SELECT * from '.$tableCustomer.' where email = "'.$post_email.'" ';
 				$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
 				$custdata = $connection->fetchRow($sql);
 				
@@ -539,7 +563,7 @@ public function ajaxupdateAction()
 		}
 	}
 	
-	public function ajaxordersmsAction($sender, $message, $number)
+	public function ajaxordersmsAction($sender='', $message='', $number='')
 	{  
 	  $post = $this->getRequest()->getPost();
 		try {
@@ -556,8 +580,8 @@ public function ajaxupdateAction()
 		$adminUserModel = Mage::getModel('admin/user');
                 $userCollection = $adminUserModel->getCollection()->load(); 
                 $admin_data = $userCollection->getData();
-                $firstname = $admin_data[0]['firstname'];
-                $lastname = $admin_data[0]['lastname'];
+                $firstname = isset($admin_data[0]['firstname'])?$admin_data[0]['firstname']:'';
+                $lastname = isset($admin_data[0]['lastname'])?$admin_data[0]['lastname']:'';
                 $characters = '1234567890';
 		$ref_num = '';
 		for ($i = 0; $i < 9; $i++)
@@ -578,7 +602,7 @@ public function ajaxupdateAction()
                 $msgbody = str_replace('{order_reference}', $ref_num, $order_date);    
                 $arr = array();
                 $arr['to'] = $number;
-                $arr['from'] = $post['sender'];
+                $arr['from'] = isset($post['sender'])?$post['sender']:'';
                 $arr['text'] = $msgbody;
 
                 $result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);
@@ -595,7 +619,7 @@ public function ajaxupdateAction()
 		}        
 	}
 	
-	public function ajaxordershippedAction($sender,$message,$number)
+	public function ajaxordershippedAction($sender='', $message='', $number='')
 	{
 		$post = $this->getRequest()->getPost();
 		try {
@@ -614,8 +638,8 @@ public function ajaxupdateAction()
                     $adminUserModel = Mage::getModel('admin/user');
                     $userCollection = $adminUserModel->getCollection()->load(); 
                     $admin_data = $userCollection->getData();
-                    $firstname = $admin_data[0]['firstname'];
-                    $lastname = $admin_data[0]['lastname'];
+                    $firstname = isset($admin_data[0]['firstname'])?$admin_data[0]['firstname']:'';
+                    $lastname = isset($admin_data[0]['lastname'])?$admin_data[0]['lastname']:'';
                     $characters = '1234567890';
                     $ref_num = '';
                     for ($i = 0; $i < 9; $i++)
@@ -636,7 +660,7 @@ public function ajaxupdateAction()
                     $msgbody = str_replace('{order_reference}', $ref_num, $order_date);
                     $arr = array();
                     $arr['to'] = $number;
-                    $arr['from'] = $post['sender'];
+                    $arr['from'] = !empty($post['sender'])?$post['sender']:'';
                     $arr['text'] = $msgbody;
 
                     $result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);	
@@ -653,7 +677,7 @@ public function ajaxupdateAction()
 		}        
 	}
 	
-	public function ajaxsmscampaignAction($sender,$message,$number)
+	public function ajaxsmscampaignAction($sender='', $message='', $number='')
 	{
 		$post = $this->getRequest()->getPost();
 		try {
@@ -670,14 +694,15 @@ public function ajaxupdateAction()
                     $adminUserModel = Mage::getModel('admin/user');
                     $userCollection = $adminUserModel->getCollection()->load(); 
                     $admin_data = $userCollection->getData();
-                    $firstname = $admin_data[0]['firstname'];
-                    $lastname = $admin_data[0]['lastname'];
+
+                    $firstname = isset($admin_data[0]['firstname'])?$admin_data[0]['firstname']:'';
+                    $lastname = isset($admin_data[0]['lastname'])?$admin_data[0]['lastname']:'';
                     $msgbody = $post['message'];
                     $fname = str_replace('{first_name}', $firstname, $msgbody);
                     $msgbody = str_replace('{last_name}', $lastname."\r\n", $fname);
                     $arr = array();
                     $arr['to'] = $number;
-                    $arr['from'] = $post['sender'];
+                    $arr['from'] = !empty($post['sender'])?$post['sender']:'';
                     $arr['text'] = $msgbody;			
                     $result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);			
 			if (isset($result->status) && $result->status == 'OK')

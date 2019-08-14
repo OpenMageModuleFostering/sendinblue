@@ -12,10 +12,13 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 {
     public function indexAction()
     {
-        Mage::getModel('sendinblue/sendinblue')->createFolderCaseTwo();
+        $params = Mage::app()->getRequest()->getParams();
+		$params = empty($params)?array():$params;
+		if (isset($params['sendin_apikey']) && $params['sendin_apikey'] != '')
+			$this->CreateFolderCaseTwo();
+
 		$this->loadLayout();
         $this->renderLayout();
-        
     }
 	public function syncronizepostAction()
     {
@@ -29,7 +32,6 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                 $sendin_switch->saveConfig('sendinblue/syncronize', $post['syncronize']);
 				if (!empty($post['template']))
                 {
-                    $sendin_switch = new Mage_Core_Model_Config();
 					$sendin_switch->saveConfig('sendinblue/Sendin_Template_Id', $post['template']);
 					$message = $this->__('Your setting has been successfully saved');
                 }
@@ -47,6 +49,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                 }
 				
             }
+
         }
         catch (Exception $e)
         {
@@ -54,6 +57,51 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
         }
         $this->_redirect('*/*');
     }
+    
+	public function reimportpostAction()
+    {
+        $post = $this->getRequest()->getPost();
+        try {
+            if (empty($post))
+                Mage::throwException($this->__('Invalid form data.'));
+            $sendin_switch = new Mage_Core_Model_Config();
+            if (isset($post['importoldSubmit']) && !empty($post['importoldSubmit']))
+                {
+                    $list = Mage::getModel('sendinblue/sendinblue')->getUserlists();
+                    $list_id = str_replace('|', ',', $list);
+                    $apikey = Mage::getModel('sendinblue/sendinblue')->getApiKey();
+                    $allemail = Mage::getModel('sendinblue/sendinblue')->getcustomers();		
+					$params = array();
+					$params['webaction'] = 'IMPORTUSERS';
+					$params['key'] = $apikey;
+					$params['url'] = Mage::getBaseUrl('media').'sendinblue_csv/ImportSubUsersToSendinblue.csv';
+					$params['listids'] = $list_id;
+					$params['notify_url'] = Mage::getBaseUrl().'sendinblue/ajax/emptySubsUserToSendinblue';
+					$responce_data = Mage::getModel('sendinblue/sendinblue')->curlRequestAsyc($params);
+
+					$res_value = json_decode($responce_data);
+					$sendin_switch->saveConfig('sendinblue/importOldUserStatus', 0);
+						if (empty($res_value->process_id))
+						{
+							$sendin_switch->saveConfig('sendinblue/importOldUserStatus', 1);
+							$message = $this->__('Old subscribers not imported successfully, please click on Import Old Subscribers button to import them again');
+							Mage::getSingleton('adminhtml/session')->addError($message);
+						}
+						else
+						{
+							$message = $this->__('Your setting has been successfully saved');
+							Mage::getSingleton('adminhtml/session')->addSuccess($message);
+						}
+				}
+
+        }
+        catch (Exception $e)
+        {
+            Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
+        }
+        $this->_redirect('*/*');
+    }
+
     public function apikeypostAction()
     {
 		$post = $this->getRequest()->getPost();
@@ -76,8 +124,17 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                     $sendin_switch->saveConfig('sendinblue/enabled', $post['sendin_api_status']);
 					$sendin_switch->saveConfig('sendinblue/syncronize', 1);
                     Mage::getModel('sendinblue/sendinblue')->removeOldEntry();
+                    if(Mage::getModel('sendinblue/sendinblue')->getImportOldSubsStatus()==1)
+                    {
+                    $message = $this->__('Old subscribers not imported successfully, please click on Import Old Subscribers button to import them again');
+                    Mage::getSingleton('core/session')->addError($message);
+				    }
+                    else
+                    {
                     $message = $this->__('Your setting has been successfully saved');
-                    Mage::getSingleton('adminhtml/session')->addSuccess($message);
+					Mage::getSingleton('adminhtml/session')->addSuccess($message);
+					}
+                    
                 } else if (isset($result['error']))
                 {
                     $message = $this->__('You have entered wrong api key');
@@ -393,21 +450,21 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
 				foreach ($results as $i => $result)
 				{ 
 				
-					if(!empty($result['shipping_telephone']))
+					if(isset($result['shipping_telephone']) && !empty($result['shipping_telephone']))
 					{
 						$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
 						$sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$result['shipping_country_code'].'" ';
 						$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
 						$data = $connection->fetchRow($sql);						
 						$number = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($result['shipping_telephone'],$data['country_prefix']);					
-						$firstname = $result['firstname'];
-						$lastname = $result['lastname'];
-						$msgbody = $post['sender_campaign_message'];
+						$firstname = !empty($result['firstname'])?$result['firstname']:'';
+						$lastname = !empty($result['lastname'])?$result['lastname']:'';
+						$msgbody = !empty($post['sender_campaign_message'])?$post['sender_campaign_message']:'';
 						$fname = str_replace('{first_name}', $firstname, $msgbody);
 						$msgbody = str_replace('{last_name}', $lastname."\r\n", $fname);
 						$arr = array();
 						$arr['to'] = $number;
-						$arr['from'] = $post['sender_campaign'];
+						$arr['from'] = !empty($post['sender_campaign'])?$post['sender_campaign']:'';
 						$arr['text'] = $msgbody;						
 						Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);				     				
 					}
