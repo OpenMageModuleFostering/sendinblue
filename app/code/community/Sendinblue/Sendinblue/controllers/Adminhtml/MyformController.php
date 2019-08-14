@@ -36,7 +36,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
         $sendinTemplateFinal = '';
         $formKey = '';
         $moduleStatus = '';
-        
+
         foreach ($configDataObj as $configData) {
             $sendinblueEnabled = $configData->getData();  
             if(count($sendinblueEnabled) > 0) {
@@ -125,7 +125,6 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                         "importOldSubsStatus" => $importOldSubsStatus,
                         "moduleStatus" => $moduleStatus,
                         "credit" => $credit,
-                        "notify_value" => $notifyValue,
                         "notifyEmailStatus" => $notifyEmailStatus,
                         "notifyValueStatus" => $notifyValueStatus,
                         "sendSmsOrderSubject" => $sendSmsOrderSubject,
@@ -143,6 +142,10 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                         "sendinTemplateFinal" => $sendinTemplateFinal
                     );
         Mage::register('viewData', $viewData);
+        $respPort = $sendinModule->checkPortStatus();
+        if ($respPort === 0) {
+            echo Mage::getModel('core/session')->addError('Your server configuration does not allow to send emails. Please contact you system administrator to allow outgoing connections on port 587 for following IP ranges: 94.143.17.4/32, 94.143.17.6/32 and 185.107.232.0/24.');
+        }
         $this->loadLayout();
         $this->renderLayout();
     }
@@ -159,15 +162,23 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
             if (isset($requestParameter['syncronizeSubmit'])) {
                 $sendinSwitch->saveConfig('sendinblue/syncronize', $requestParameter['syncronize']);
                 if (!empty($requestParameter['subscribe_confirm_type'])) {
-                    $sendinSwitch->saveConfig('sendinblue/SendinSubscribeConfirmType', $requestParameter['subscribe_confirm_type']);
-                    $sendinSwitch->saveConfig('sendinblue/SendinTemplateId', $requestParameter['template_simple']);
-                    $sendinSwitch->saveConfig('sendinblue/SendinOptinRedirectUrlCheck', $requestParameter['optin_redirect_url_check']);
-                    $sendinSwitch->saveConfig('sendinblue/SendinDoubleoptinRedirectUrl', $requestParameter['doubleoptin-redirect-url']);
-                    $sendinSwitch->saveConfig('sendinblue/SendinDoubleoptinTemplateId', $requestParameter['doubleoptin_template_id']);
-                    $sendinSwitch->saveConfig('sendinblue/SendinFinalConfirmEmail', $requestParameter['final_confirm_email']);
-                    $sendinSwitch->saveConfig('sendinblue/SendinTemplateFinal', $requestParameter['template_final']);
+                    $subscribeConfirmType = !empty($requestParameter['subscribe_confirm_type']) ? $requestParameter['subscribe_confirm_type'] : '';
+                    $optinRedirectUrlCheck = !empty($requestParameter['optin_redirect_url_check']) ? $requestParameter['optin_redirect_url_check'] : '';
+                    $doubleoptinRedirectUrl = !empty($requestParameter['doubleoptin-redirect-url']) ? $requestParameter['doubleoptin-redirect-url'] : '';
+                    $doubleoptinTemplateId = !empty($requestParameter['doubleoptin_template_id']) ? $requestParameter['doubleoptin_template_id'] : '';
+                    $finalConfirmEmail = !empty($requestParameter['final_confirm_email']) ? $requestParameter['final_confirm_email'] : '';
+                    $templateFinal = !empty($requestParameter['template_final']) ? $requestParameter['template_final'] : '';
+                    $templateSimple = !empty($requestParameter['template_simple']) ? $requestParameter['template_simple'] : '';
+                    
+                    $sendinSwitch->saveConfig('sendinblue/SendinSubscribeConfirmType', $subscribeConfirmType);
+                    $sendinSwitch->saveConfig('sendinblue/SendinTemplateId', $templateSimple);
+                    $sendinSwitch->saveConfig('sendinblue/SendinOptinRedirectUrlCheck', $optinRedirectUrlCheck);
+                    $sendinSwitch->saveConfig('sendinblue/SendinDoubleoptinRedirectUrl', $doubleoptinRedirectUrl);
+                    $sendinSwitch->saveConfig('sendinblue/SendinDoubleoptinTemplateId', $doubleoptinTemplateId);
+                    $sendinSwitch->saveConfig('sendinblue/SendinFinalConfirmEmail', $finalConfirmEmail);
+                    $sendinSwitch->saveConfig('sendinblue/SendinTemplateFinal', $templateFinal);
                     $sendinModule = Mage::getModel('sendinblue/sendinblue');
-                    if ($requestParameter['subscribe_confirm_type'] === 'doubleoptin') {
+                    if ($subscribeConfirmType === 'doubleoptin') {
                         $responseDoubleOption = $sendinModule->checkFolderListDoubleoptin();
                         if (!empty($responseDoubleOption['optin_id'])) {
                             $sendinSwitch->saveConfig('sendinblue/SendinOptinListId', $responseDoubleOption['optin_id']);
@@ -496,7 +507,7 @@ class Sendinblue_Sendinblue_Adminhtml_MyformController extends Mage_Adminhtml_Co
                 $sendinSwitch->saveConfig('sendinblue/Sendin_Notify_Value', $requestParameter['sendin_notify_value']);
                 $sendinSwitch->saveConfig('sendinblue/Sendin_Notify_Email', $requestParameter['sendin_notify_email']);
                 $sendinSwitch->saveConfig('sendinblue/Sendin_Notify_Cron_Executed', 0, 'default', 0);
-                $message = $this->__('Your setting has been successfully saved');
+                $message = $this->__('Your setting has been successfully saved, please clean your cache');
                 Mage::getModel('adminhtml/session')->addSuccess($message);
             }
         }

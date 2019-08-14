@@ -47,7 +47,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
         $ch = curl_init($called_url);
         $auth_header = 'api-key:'.$this->api_key;
         $content_header = "Content-Type:application/json";
-        $track_header = "sib-plugin:magento-1.3.2";
+        $track_header = "sib-plugin:magento-1.2.8";
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             // Windows only over-ride
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -137,7 +137,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     */
     public function updateChildAccount($data)
     {
-        return $this->put("account", json_decode($data));
+        return $this->put("account", json_encode($data));
     }
 
     /*
@@ -179,7 +179,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     */
     public function addRemoveChildCredits($data)
     {
-        return $this->post("account/addrmvcredit", json_decode($data));
+        return $this->post("account/addrmvcredit", json_encode($data));
     }
 
     /*
@@ -205,7 +205,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     */
     public function getCampaignsV2($data)
     {
-        return $this->get("campaign/detailsv2", json_decode($data));
+        return $this->get("campaign/detailsv2", json_encode($data));
     }
 
     /*
@@ -249,7 +249,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     */
     public function createCampaign($data)
     {
-        return $this->post("campaign", json_decode($data));
+        return $this->post("campaign", json_encode($data));
     }
 
     /*
@@ -296,7 +296,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     {
         $id = $data['id'];
         unset($data['id']);
-        return $this->put("campaign/".$id, json_decode($data));
+        return $this->put("campaign/".$id, json_encode($data));
     }
 
     /*
@@ -328,7 +328,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     {
         $id = $data['id'];
         unset($data['id']);
-        return $this->post("campaign/".$id."/report", json_decode($data));
+        return $this->post("campaign/".$id."/report", json_encode($data));
     }
 
     /*
@@ -344,7 +344,7 @@ class Sendinblue_Sendinblue_Model_Psmailin
     {
         $id = $data['id'];
         unset($data['id']);
-        return $this->post("campaign/".$id."/recipients", json_decode($data));
+        return $this->post("campaign/".$id."/recipients", json_encode($data));
     }
 
     /*

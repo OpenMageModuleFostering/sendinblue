@@ -195,10 +195,10 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                     <div class="listData ver_5 managesubscribeBlock">
                                                         <select class="ui-state-default" name="template_simple"><option value=""><?php echo $this->__('Select Template'); ?></option>
                                                             <?php
-                                                            $templatelist = $viewData['templatelist'];
+                                                            $templatelist = isset($viewData['templatelist']) ? $viewData['templatelist'] : array();
                                                             if (!empty($templatelist['data']['campaign_records'])) {
                                                                 foreach ($templatelist['data']['campaign_records'] as $template_data) { 
-                                                                    if ($template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], 'DOUBLEOPTIN') === false) { ?>                        
+                                                                    if (isset($template_data['templ_status']) && $template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], 'DOUBLEOPTIN') === false) { ?>                        
 
                                                                         <option value="<?php echo $template_data['id']; ?>" <?php if(isset($viewData['sendinTemplateId']) && $template_data['id'] == $viewData['sendinTemplateId']) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>             
                                                             <?php 
@@ -231,10 +231,10 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                                 <select  class="ui-state-default" name="doubleoptin_template_id">
                                                     <option value=""><?php echo $this->__('Select Template'); ?></option>
                                                     <?php
-                                                    $templatelist = $viewData['templatelist'];
+                                                    $templatelist = isset($viewData['templatelist']) ? $viewData['templatelist'] : array();
                                                     if (!empty($templatelist['data']['campaign_records'])) {
                                                         foreach ($templatelist['data']['campaign_records'] as $template_data) { 
-                                                            if ($template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], '[DOUBLEOPTIN]')) { 
+                                                            if (isset($template_data['templ_status']) && $template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], '[DOUBLEOPTIN]')) { 
                                                     ?>                        
                                                     <option value="<?php echo $template_data['id']; ?>" <?php if(isset($viewData['sendinDoubleoptinTemplateId']) && $template_data['id'] == $viewData['sendinDoubleoptinTemplateId']) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>                  
                                                     <?php   
@@ -275,7 +275,7 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                                             $templatelist = $viewData['templatelist'];
                                             if (!empty($templatelist['data']['campaign_records'])) {
                                                 foreach ($templatelist['data']['campaign_records'] as $template_data) { 
-                                                    if ($template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], 'DOUBLEOPTIN') === false) { 
+                                                    if (isset($template_data['templ_status']) && $template_data['templ_status'] === 'Active' && stristr($template_data['html_content'], 'DOUBLEOPTIN') === false) { 
                                             ?>                        
                                                     <option value="<?php echo $template_data['id']; ?>" <?php if(isset($viewData['sendinTemplateFinal']) && $template_data['id'] == $viewData['sendinTemplateFinal']) echo 'selected = "selected"'; ?> ><?php echo $template_data['campaign_name']; ?></option>                  
                                             <?php   
@@ -413,9 +413,9 @@ $skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
                    <?php echo $this->__('Currently you have '); ?>
                    <?php
                          $credit = $viewData['credit'];
-                         $notify_value = $viewData['notifyValueStatus'];
+                         $notifyValue = $viewData['notifyValueStatus'];
                    ?>
-                   <?php if ($credit >= $notify_value){ ?> <strong style="color:#000000;"><?php echo $credit; ?></strong><?php } else {?><strong style="color:#F03D25;"><?php echo $credit; ?></strong><?php } ?>
+                   <?php if ($credit >= $notifyValue){ ?> <strong style="color:#000000;"><?php echo $credit; ?></strong><?php } else {?><strong style="color:#F03D25;"><?php echo $credit; ?></strong><?php } ?>
                     
                     <?php echo $this->__(' credits sms. To buy more credits, please click'); ?>
                 <a target="_blank" href ="<?php echo $this->__('https://www.sendinblue.com/pricing?utm_source=magento_plugin&utm_medium=plugin&utm_campaign=module_link/#tab-plan-smsplan'); ?>" style="color: #000000; outline: 0 none; text-decoration: none;">

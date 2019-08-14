@@ -1633,4 +1633,15 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $psmailinObj = Mage::getModel('sendinblue/psmailin', $params);
         return $psmailinObj->createUpdateUser($userData);
     }
+    
+    /**
+    * check port 587 open or not, for using Sendinblue smtp service.
+    */
+    public function checkPortStatus()
+    {
+        $relay_port_status = @fsockopen('smtp-relay.sendinblue.com', 587);
+        if (!$relay_port_status) {
+            return 0;
+        }
+    }
 }

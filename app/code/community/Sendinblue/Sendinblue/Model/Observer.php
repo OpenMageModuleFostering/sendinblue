@@ -129,7 +129,8 @@ class Sendinblue_Sendinblue_Model_Observer
             $client = 0;
         }
 
-        $isSubscribed = !empty($customerAddressData['is_subscribed']) ? $customerAddressData['is_subscribed'] : $requestParameters['is_subscribed'];
+        $requestSubscriber = isset($requestParameters['is_subscribed']) ? $requestParameters['is_subscribed'] : '';
+        $isSubscribed = !empty($customerAddressData['is_subscribed']) ? $customerAddressData['is_subscribed'] : $requestSubscriber;
         if (!empty($customerData['firstname']) || !empty($customerAddress['telephone']) || !empty($email)) {
             $costomerData = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
             $costomerDataStatus = $costomerData->getStatus();
