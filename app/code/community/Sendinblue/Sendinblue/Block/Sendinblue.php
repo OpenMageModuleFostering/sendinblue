@@ -26,7 +26,7 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
         $getTrackingStatus = $sendinblueData->getTrackingStatus();
         $getOrderStatus = $sendinblueData->getOrderSmsStatus();
         $sibLists = $sendinblueData->getUserlists();
-        $getUserLists = !empty($sibLists) ? $sibLists : '';
+        $getUserLists = !empty($sibLists) ? array($sibLists) : array();
 
         $attributesName = $sendinblueData->allAttributesName();
         $afterArrayMerge = array();
@@ -39,9 +39,9 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
         $custmerData = $customer->getData();
         $localeCode = Mage::app()->getLocale()->getLocaleCode();
         $referenceNumber = !empty($orderData['increment_id']) ? $orderData['increment_id'] : '';
-        $orderprice = !empty($orderData['grand_total']) ? $orderData['grand_total'] : '';
+        $orderprice = !empty($orderData['grand_total']) ? $orderData['grand_total'] : '0';
         $currencyCode = !empty($orderData['base_currency_code']) ? $orderData['base_currency_code'] : '';
-
+        $smsMobile = '';
         if($getEnableStatus && $getOrderStatus) {
             if (!empty($dataDisplay['telephone']) && !empty($dataDisplay['country_id'])) {
                 $countryCode = $sendinblueData->getCountryCode($dataDisplay['country_id']);                 
@@ -56,10 +56,8 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
             }
 
             $totalPay = $orderprice.' '.$currencyCode;
-            $senderOfMsg = $sendinblueData->getSendSmsOrderSubject();
-            $senderData = !empty($senderOfMsg) ? $senderOfMsg : '';
-            $msgbodyData = $sendinblueData->getSendSmsmOrderMessage();
-            $msgbody = !empty($msgbodyData) ? $msgbodyData : '';
+            $senderData = $sendinblueData->getSendSmsOrderSubject();
+            $msgbody = $sendinblueData->getSendSmsmOrderMessage();
             $firstName = str_replace('{first_name}', $dataDisplay['firstname'], $msgbody);
             $lastName = str_replace('{last_name}', $dataDisplay['lastname']."\r\n", $firstName);
             $procuctPrice = str_replace('{order_price}', $totalPay, $lastName);
@@ -95,8 +93,7 @@ class Sendinblue_Sendinblue_Block_Sendinblue extends Mage_Core_Block_Template
             else {
                 $date = date('m-d-Y', strtotime($orderData['created_at']));
             }
-                      
-            $getUserLists = array($getUserLists);
+
             $fName = !empty($custmerData['firstname']) ? $custmerData['firstname'] : '';
             $lName = !empty($custmerData['lastname']) ? $custmerData['lastname'] : '';
             $attributesValues = array("PRENOM" => $fName, "NOM" => $lName, "ORDER_ID" => $referenceNumber, "ORDER_DATE" => $date, "ORDER_PRICE" => $orderprice);

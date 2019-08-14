@@ -182,7 +182,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     {
         $status = $this->getGeneralConfig('Sendin_Sender_Order', Mage::app()->getStore()->getStoreId());
         if (!$status) {
-            return false;
+            return '';
         }
         return $status;
     }
@@ -194,7 +194,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     {
         $status = $this->getGeneralConfig('Sendin_Sender_Order_Message', Mage::app()->getStore()->getStoreId());
         if (!$status) {
-            return false;
+            return '';
         }
         return $status;
     }

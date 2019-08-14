@@ -210,8 +210,7 @@ class Sendinblue_Sendinblue_Model_Observer
                 $procuctPrice = str_replace('{order_price}', $totalPay, $lname);
                 $orderDate = str_replace('{order_date}', $ordDate."\r\n", $procuctPrice);
                 $messageBody = str_replace('{order_reference}', $refNum, $orderDate);
-                $senderShipmentValue = $sendinblueModule->getSendSmsShipingSubject();
-                $senderShipment = !empty($senderShipmentValue) ? $senderShipmentValue : '';
+                $senderShipment = $sendinblueModule->getSendSmsShipingSubject();
 
                 $smsInformation = array();
                 $smsInformation['to'] = $mobile;
