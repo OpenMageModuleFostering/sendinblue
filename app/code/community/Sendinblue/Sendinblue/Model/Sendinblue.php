@@ -33,9 +33,13 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $this->api_url = 'http://ws.mailin.fr/';
 		$this->api_key = $this->getApiKey();
 		$value_language = $this->getApiConfigValue();
-		$this->user_language = $value_language->language;
-		if (!$this->lists_ids)
-		$this->lists_ids = str_replace(',', '|', $this->getUserlists($scope));
+		if(isset($value_language->language)) {
+			$this->user_language = $value_language->language;
+		}
+
+		if (!$this->lists_ids) {
+			$this->lists_ids = str_replace(',', '|', $this->getUserlists($scope));
+		}
 
 		$params = Mage::app()->getRequest()->getParams();
 		$params = empty($params)?array():$params;
