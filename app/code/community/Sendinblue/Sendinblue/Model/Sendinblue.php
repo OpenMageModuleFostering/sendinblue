@@ -1063,12 +1063,12 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      *  This method is used to compare key and value 
      * return all value in array whose present in array key
      */
-    public function merge_my_array($one, $two)
+    public function merge_my_array($one, $two, $email = "")
     {
-		$resArr = array();
+		$resArr = $email ? array('EMAIL'=> $email) : array();
 		if (count($one) > 0) {
 			foreach($one as $k => $v) {
-				$resArr[$k] = isset($two[$v])?$two[$v]:'';
+				$resArr[$k] = isset($two[$v])?str_replace(';',',', $two[$v]):'';
 			}
 		}
 		return $resArr;
@@ -1115,17 +1115,16 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             
 			if ( !empty($customer_addr_data[$subscriber_email]) ) {
 			$customer_addr_data[$subscriber_email]['email'] = $subscriber_email;
-			$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email]);
-			$resp[$cnt]['EMAIL'] = $subscriber_email;
+			$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email], $subscriber_email);
 			}
 			else
 			{
 				$newsletterArr['client'] = $subsdata['customer_id']>0?1:0;
-				$resp[$cnt] = $this->merge_my_array($attributesName, $newsletterArr);
-				$resp[$cnt]['EMAIL'] = $subscriber_email;
+				$resp[$cnt] = $this->merge_my_array($attributesName, $newsletterArr, $subscriber_email);
 				$resp[$cnt]['STORE_ID'] = $subsdata['store_id'];
 			}
                 $cnt++;
+                
 	}
 
      if (!is_dir(Mage::getBaseDir('media').'/sendinblue_csv'))
@@ -1133,7 +1132,8 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 
 		$handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
 		$key_value = array_keys($attributesName);
-		$key_value[] = 'EMAIL';
+		array_splice($key_value, 0, 0, 'EMAIL');
+		
 		fwrite($handle, implode(';', $key_value)."\n");
 
 		foreach ($resp as $newsdata)
@@ -1314,7 +1314,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		else
 		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Expect:', 'sib-plugin:magento-1.2.7'
+			'Expect:', 'sib-plugin:magento-1.2.8'
 		));	
 		
 		$ndata = trim($ndata,'&');		
@@ -1345,7 +1345,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		else
 		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Expect:', 'sib-plugin:magento-1.2.7'
+			'Expect:', 'sib-plugin:magento-1.2.8'
 		));	
 		
 		$ndata = trim($ndata,'&');		
