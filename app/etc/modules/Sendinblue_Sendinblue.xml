@@ -3,7 +3,7 @@
     <modules>
         <Sendinblue_Sendinblue>
             <active>true</active>
-            <codePool>local</codePool>
+            <codePool>community</codePool>
         </Sendinblue_Sendinblue>
     </modules>
 </config> 

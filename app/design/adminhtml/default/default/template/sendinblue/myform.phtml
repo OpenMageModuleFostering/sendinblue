@@ -13,19 +13,23 @@
 	var selectoption = "<?php echo $this->__('Select option'); ?>";
 	var selected = "<?php echo $this->__('Selected'); ?>";
 </script>
-<script type="text/javascript" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/js/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/js/jquery-ui.min.js"></script>
-<script type="text/javascript" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/js/jquery.multiselect.min.js"></script>
-<script type="text/javascript" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/js/sendinblue.js"></script>
+<?php 
+$skinUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);
+?>
+<script type="text/javascript" src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/js/jquery.multiselect.min.js"></script>
+<script type="text/javascript" src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/js/sendinblue.js"></script>
 <div class="entry-edit">
 <div class="">
-<img class="sendin-logo" src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/<?php echo $this->__('sendinblue.png'); ?>">
+<img class="sendin-logo" src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/<?php echo $this->__('sendinblue.png'); ?>">
 <div class="slogan">
 	<?php echo $this->__('SendinBlue : THE all-in-one plugin for your marketing and transactional emails.'); ?></div><div class="clear"></div>
 </div>
+  <input type="hidden" name="langvalue" value="<?php echo Mage::app()->getLocale()->getLocaleCode(); ?>" id="langvalue">
 <div class="sendin_row">
 <fieldset class="fields">
-	<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif">
+	<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif">
 	 <?php echo $this->__('SendinBlue'); ?></legend>
 		<div class="contact-details">
 		<h2 style="color:#268CCD;"> <?php echo $this->__('Contact SendinBlue team'); ?></h2>
@@ -35,7 +39,7 @@
 		<?php echo $this->__('contact@sendinblue.com'); ?></a>
 		<br><?php echo $this->__('Phone : 0899 25 30 61'); ?></p>
 		<p style="padding-top:20px;"><b><?php echo $this->__('For further informations, please visit our website:'); ?></b>
-		<br><a href="<?php echo $this->__('https://www.sendinblue.com'); ?>" target="_blank" style="color:#268CCD; text-decoration: none;">
+		<br><a href="<?php echo $this->__('https://www.sendinblue.com?utm_source=magento_plugin&utm_medium=plugin&utm_campaign=module_link'); ?>" target="_blank" style="color:#268CCD; text-decoration: none;">
 		<?php echo $this->__('https://www.sendinblue.com'); ?></a></p>
 		</div>
 		<div><p><?php echo $this->__('With the SendinBlue plugin, you can find everything you need to easily and efficiently send your email & SMS campaigns to your prospects and customers.'); ?></p>
@@ -56,38 +60,48 @@
 		</fieldset>
 </div>
 <?php
-$module_status = Mage::getModel('sendinblue/sendinblue')->getEnableStatus()?1:0; 
+$sendinModule = Mage::getModel('sendinblue/sendinblue');
+$sendinStatus = $sendinModule->getEnableStatus();
+
+$module_status = isset($sendinStatus)?1:0; 
 if ($module_status)
-	$style = '';	
+	$style = '';
 else
 	$style = 'style="display:none;"';
-$api_key = Mage::getModel('sendinblue/sendinblue')->getApiKey(); 
-$get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus();
 
+$api_key = $sendinModule->getApiKey(); 
+$get_syncronize = $sendinModule->getSyncronizeStatus();
+$trackStatus = $sendinModule->getTrackingStatus();
+$trackingHistory = $sendinModule->getTrackingHistoryStatus();
+$notifySmsStatus = $sendinModule->getNotifySmsStatus();
+$orderSmsStatus = $sendinModule->getOrderSmsStatus();
+$campaignStatus = $sendinModule->getCampaignStatus();
+$shipingSmsStatus = $sendinModule->getShipingSmsStatus();
+$formKey = Mage::getSingleton('core/session')->getFormKey();
 ?>
 
 <div class="sendin_row">
 <fieldset class="fields">
-	<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif">
+	<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif">
 	 <?php echo $this->__('Prerequisites'); ?></legend>
 <span><?php echo $this->__('- You should have a SendinBlue account. You can create a free account here:'); ?> 
-<a href="<?php echo $this->__('https://www.sendinblue.com'); ?>" target="_blank" style="text-decoration: none; color: #268CCD;">
+<a href="<?php echo $this->__('https://www.sendinblue.com?utm_source=magento_plugin&utm_medium=plugin&utm_campaign=module_link'); ?>" target="_blank" style="text-decoration: none; color: #268CCD;">
 &nbsp;<?php echo $this->__('https://www.sendinblue.com'); ?></a><br></span></fieldset>
 </div>
 
 <div class="sendin_row" >
 <form id="edit_formapik" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/apikeypost'); ?>">
-	<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />		
-	<input name="skin_url" id ='skin_url' type="hidden" value="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>" />		
+	<input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />		
+	<input name="skin_url" id ='skin_url' type="hidden" value="<?php echo $skinUrl;?>" />		
 	<div class="section-config active">	
 		<fieldset class="fields">
-			<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Settings'); ?></legend>
+			<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Settings'); ?></legend>
 			<table cellspacing="0" class="form-list3">
 					<tr>
 						<td class="fix_width2"><label><?php echo $this->__('Activate the SendinBlue module:'); ?></label></td>
 						<td class="input-ele">
-							<input type="radio" <?php if(Mage::getModel('sendinblue/sendinblue')->getEnableStatus()==1) { echo 'checked'; } ?>    name="sendin_api_status"  class="sendin_api_status radio_nospaceing" value="1" /> <?php echo $this->__('Yes'); ?>
-							<input  type="radio"  name="sendin_api_status" <?php if(Mage::getModel('sendinblue/sendinblue')->getEnableStatus()==0) { echo 'checked'; } ?>  class="sendin_api_status radio_spaceing2" value="0" /> <?php echo $this->__('No'); ?>
+							<input type="radio" <?php if($sendinStatus == 1) { echo 'checked'; } ?>    name="sendin_api_status"  class="sendin_api_status radio_nospaceing" value="1" /> <?php echo $this->__('Yes'); ?>
+							<input  type="radio"  name="sendin_api_status" <?php if($sendinStatus == 0) { echo 'checked'; } ?>  class="sendin_api_status radio_spaceing2" value="0" /> <?php echo $this->__('No'); ?>
 							<input type="hidden" name="apistatuskey" id="apistatuskey" value="<?php echo $module_status;?>">
 						</td>	
 					</tr>
@@ -95,7 +109,7 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
 					<tr <?php echo $style; ?> id="sendin_apikey">
 						<td><label><?php echo $this->__('API Key:'); ?></label></td>
 						<td class="input-ele">	
-							<input  type="text" name="sendin_apikey" id="sendin_apikey_val" class="input-text" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getApiKey(); ?>" />
+							<input  type="text" name="sendin_apikey" id="sendin_apikey_val" class="input-text" value="<?php echo $api_key; ?>" />
 							<span class="toolTip" title="<?php echo stripslashes($this->__('Please enter your API key from your SendinBlue account and if you don\'t have it yet, please go to www.sendinblue.com and subscribe. You can then get the API key from https://my.sendinblue.com/advanced/apikey')); ?>">&nbsp;</span>
 						</td>
 					</tr>
@@ -118,28 +132,28 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
 <form id="edit_form" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/syncronizepost'); ?>">
 
 	<div class="section-config active">
-			<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />		  
+			<input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />		  
 			<fieldset id="my-fieldset" class="fields">
-				<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Activate SendinBlue to manage subscribers'); ?></legend>
+				<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Activate SendinBlue to manage subscribers'); ?></legend>
 				<table cellspacing="0" class="form-list">
 					<tr>
 						<td class="fix_width"><label><?php echo $this->__('Activate SendinBlue to manage subscribers'); ?></label>
 						</td>
 						<td class="input-ele">
-								<input type="radio" <?php if(Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()==1) { echo "checked"; } ?>  name="syncronize" value="1" class="radio_nospaceing hdtab"/> <?php echo $this->__('Yes'); ?>
-							<input  type="radio" <?php if(Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()==0) { echo "checked"; } ?> name="syncronize" value="0" class="radio_spaceing2 hdtab" />  <?php echo $this->__('No'); ?> <span title="<?php echo $this->__('If you activate this feature, your new contacts will be automatically added to SendinBlue or unsubscribed from SendinBlue. To synchronize the other way (SendinBlue to Magento), you should run the url (mentioned below) each day.'); ?>" class="toolTip">&nbsp;</span>
+								<input type="radio" <?php if($get_syncronize == 1) { echo "checked"; } ?>  name="syncronize" value="1" class="radio_nospaceing hdtab"/> <?php echo $this->__('Yes'); ?>
+							<input  type="radio" <?php if($get_syncronize == 0) { echo "checked"; } ?> name="syncronize" value="0" class="radio_spaceing2 hdtab" />  <?php echo $this->__('No'); ?> <span title="<?php echo $this->__('If you activate this feature, your new contacts will be automatically added to SendinBlue or unsubscribed from SendinBlue. To synchronize the other way (SendinBlue to Magento), you should run the url (mentioned below) each day.'); ?>" class="toolTip">&nbsp;</span>
 						</td>	
 					</tr>
 					<tr>
                     <td colspan="2">
-                    	<div id="hidetabselect" <?php if(!Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()) {?>style="display:none;"<?php } ?>>
+                    	<div id="hidetabselect" <?php if(!$get_syncronize) {?>style="display:none;"<?php } ?>>
                         	<table>
                             	<tr>
                                 	<td><label><?php echo $this->__('Your Lists'); ?></label></td>
                                     <td class="input-ele"><?php
-                                     $list = Mage::getModel('sendinblue/sendinblue')->lists();
+                                     $list = $sendinModule->lists();
                                      
-                                     $selectedlist = Mage::getModel('sendinblue/sendinblue')->getUserlists();
+                                     $selectedlist = $sendinModule->getUserlists();
                                      if($selectedlist!=NULL){
                                             $list_array = explode('|',$selectedlist);
                                          }else{
@@ -157,17 +171,17 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
                                 </tr>
                                 <tr>
                                 	<td><label><?php echo $this->__('Manage email template'); ?></label></td>
-									<td> <select  name="template" id="template" style="width: 230.833px;" class ="ui-widget ui-state-default ui-corner-all">
+									<td> <select  name="template" id="template" style="width: 230.833px; height:23px;" class ="ui-widget ui-state-default ui-corner-all">
 										<option value=""><?php echo $this->__('Select template'); ?></option>
                                     <?php
-                                    $templatelist = Mage::getModel('sendinblue/sendinblue')->templateDisplay();
+                                    $templatelist = $sendinModule->templateDisplay();
 
 									if (!empty($templatelist->result->campaign_records))
 									{
 									foreach ($templatelist->result->campaign_records as $template_data)
 									{ if ($template_data->templ_status === 'Active')
 									{ ?>                        
-                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == Mage::getModel('sendinblue/sendinblue')->getTemplateId()) echo 'selected = "selected"'; ?> ><?php echo $template_data->campaign_name; ?></option>					
+                                    <option value="<?php echo $template_data->id; ?>" <?php if($template_data->id == $sendinModule->getTemplateId()) echo 'selected = "selected"'; ?> ><?php echo $template_data->campaign_name; ?></option>					
                                     <?php }}} ?>
                                    </select>
 
@@ -182,9 +196,9 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
                                 </tr>
                                 </form>
                                 
-                                <?php if(Mage::getModel('sendinblue/sendinblue')->getImportOldSubsStatus()==1){ ?>
+                                <?php if($sendinModule->getImportOldSubsStatus()==1){ ?>
                                 <form id="reimport_form" name="reimport_form" method="post" action="<?php echo $this->getUrl('*/*/reimportpost'); ?>">
-								<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+								<input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
 								<tr>
                                 <td>&nbsp;</td>
                                 <td class="a-left">
@@ -208,35 +222,35 @@ $get_syncronize = Mage::getModel('sendinblue/sendinblue')->getSyncronizeStatus()
 </div>
 <?php 
 }
-$module_status = Mage::getModel('sendinblue/sendinblue')->getSmtpStatus(); 
+$module_status = $sendinModule->getSmtpStatus();
 if ($module_status == 0)
 $style_smtp = 'style="display:none;"';
 else
-$style_smtp = '';	
+$style_smtp = '';
 
 ?>
 <?php if ($api_key != '') {  ?>
 <div class="sendin_row alldiv" <?php echo $style; ?>  >
 <form id="edit_formsmtp" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/sendmail'); ?>">
-<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+<input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
 	<input name="smtpUrl" type="hidden" id="smtpUrl" value="<?php echo $this->getUrl('sendinblue/ajax/smtppost'); ?>" />	
 	<div class="section-config active">
 		<fieldset class="fields">
-			<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Activate SendinBlue SMTP for your transactional emails'); ?></legend>
+			<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Activate SendinBlue SMTP for your transactional emails'); ?></legend>
 			<table cellspacing="0" class="form-list">
 				
 					<tr>
 						<td class="fix_width"><label><?php echo $this->__('Activate SendinBlue SMTP for your transactional emails'); ?></label></td>
 						<td class="input-ele">
-							<input type="radio" class = 'smtpStatus radio_nospaceing' <?php if(Mage::getModel('sendinblue/sendinblue')->getSmtpStatus()==1) { echo 'checked'; } ?> name="smtp" value="1" /> <?php echo $this->__('Yes'); ?>
-						<input  <?php if(Mage::getModel('sendinblue/sendinblue')->getSmtpStatus()==0) { echo 'checked'; } ?> type="radio" class = 'smtpStatus radio_spaceing2' name="smtp" value="0" /> <?php echo $this->__('No'); ?><span title="<?php echo $this->__('Transactional email is an expected email because it is triggered automatically after a transaction or a specific event. Common examples of transactional email are : account opening and welcome message, order shipment confirmation, shipment tracking and purchase order status, registration via a contact form, account termination, payment confirmation, invoice etc.'); ?>" class="toolTip">&nbsp;</span>
+							<input type="radio" class = 'smtpStatus radio_nospaceing' <?php if($module_status == 1) { echo 'checked'; } ?> name="smtp" value="1" /> <?php echo $this->__('Yes'); ?>
+						<input  <?php if($module_status == 0) { echo 'checked'; } ?> type="radio" class = 'smtpStatus radio_spaceing2' name="smtp" value="0" /> <?php echo $this->__('No'); ?><span title="<?php echo $this->__('Transactional email is an expected email because it is triggered automatically after a transaction or a specific event. Common examples of transactional email are : account opening and welcome message, order shipment confirmation, shipment tracking and purchase order status, registration via a contact form, account termination, payment confirmation, invoice etc.'); ?>" class="toolTip">&nbsp;</span>
 						</td>
                         <td>&nbsp;</td>
 					</tr>
 										
 					 <tr <?php echo $style_smtp; ?> class='smtptest'>
 						<td class="fix_width"><label><?php echo $this->__('Send email test From / To :'); ?></label></td>
-						<td class="input-ele"><input class="input-text" name="email" id="email" value="" size="40"/> 
+						<td class="input-ele"><input class="input-text input-height" name="email" id="email" value="" size="40"/> 
 							<input type="submit" class="btn" style="margin-left:3px;" name="SmtpSubmit" onclick="return smtpvalidate('<?php echo $this->__('Please provide valid Email!') ;?>');" value ="<?php echo $this->__('Send'); ?>" />
 						</td>
 					</tr>
@@ -252,30 +266,30 @@ $style_smtp = '';
 	<div class="section-config active">		  
 			<input name="trackingUrl" type="hidden" id="trackingUrl" value="<?php echo $this->getUrl('sendinblue/ajax/codepost'); ?>" />		  
 			<fieldset id="my-fieldset" class="fields">
-				<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Code tracking'); ?> </legend>
+				<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Code tracking'); ?> </legend>
 				<table cellspacing="0" class="form-list">
 					<tr>
 						<td class="fix_width"><label><?php echo $this->__('Do you want to install a tracking code when validating an order'); ?></label>
 						</td>
 						<td class="input-ele">
-								<input type="radio" <?php if(Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==1) { echo 'checked'; } ?>  name="Tracking" class='Tracking radio_nospaceing' value="1" /> <?php echo $this->__('Yes'); ?>
-							<input  type="radio" <?php if(Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==0) { echo 'checked'; } ?> name="Tracking"  class='Tracking radio_spaceing2' value="0" /> <?php echo $this->__('No'); ?>
+								<input type="radio" <?php if($trackStatus == 1) { echo 'checked'; } ?>  name="Tracking" class='Tracking radio_nospaceing' value="1" /> <?php echo $this->__('Yes'); ?>
+							<input  type="radio" <?php if($trackStatus == 0) { echo 'checked'; } ?> name="Tracking"  class='Tracking radio_spaceing2' value="0" /> <?php echo $this->__('No'); ?>
 						<span title="<?php echo $this->__('This feature will allow you to transfer all your customers orders from Magento into SendinBlue to implement your email marketing strategy.'); ?>" class="toolTip">&nbsp;</span>
 						</td>	
 					</tr>
-                                        <?php  
-                                         if (Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==1 && Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus()==1)
-                                                $style_track = '';
-                                                else
-                                                $style_track = 'style="display:none;"';
-                                        if(Mage::getModel('sendinblue/sendinblue')->getTrackingStatus()==1 && Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus()==1) { ?>
-                                        <tr <?php echo $style_track; ?> class='ordertracking'>
-                                            <td>&nbsp;</td>
-                                            <input type="hidden" name="history_status" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getTrackingHistoryStatus(); ?>" id="history_status">
-                                            <input name="importordertrackingUrl" type="hidden" id="importordertrackingUrl" value="<?php echo $this->getUrl('sendinblue/ajax/orderhistory'); ?>" />
-                                            <td class="input-ele"><label style="text-align:left;"><a href="javascript:void(0);" class="Trackhistory button btn" style="color: #000000; outline: 0 none; text-decoration: none; font-weight: normal;"><?php echo $this->__('Import the data of previous orders'); ?></a></label></td>
-                                        </tr>
-                                        <?php } ?>
+					<?php  
+					 if ($trackStatus == 1 && $trackingHistory == 1)
+							$style_track = '';
+							else
+							$style_track = 'style="display:none;"';
+					if($trackStatus == 1 && $trackingHistory == 1) { ?>
+					<tr <?php echo $style_track; ?> class='ordertracking'>
+						<td>&nbsp;</td>
+						<input type="hidden" name="history_status" value="<?php echo $trackingHistory; ?>" id="history_status">
+						<input name="importordertrackingUrl" type="hidden" id="importordertrackingUrl" value="<?php echo $this->getUrl('sendinblue/ajax/orderhistory'); ?>" />
+						<td class="input-ele"><label style="text-align:left;"><a href="javascript:void(0);" class="Trackhistory button btn" style="color: #000000; outline: 0 none; text-decoration: none; font-weight: normal;"><?php echo $this->__('Import the data of previous orders'); ?></a></label></td>
+					</tr>
+					<?php } ?>
 				</table>
 			</fieldset>
 	</div>
@@ -283,7 +297,7 @@ $style_smtp = '';
 
 <div class="sendin_row hidetableblock" <?php echo $style; ?> >
 <fieldset class="fields">
-	<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif">
+	<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif">
 	 <?php echo $this->__('Manage SMS'); ?></legend>
    <table width="100%" cellspacing="0" cellpadding="0"  class="table hidetableblock form-list">
       
@@ -292,31 +306,31 @@ $style_smtp = '';
             <td class="row1" colspan="2" style="border:none; padding-top:10px;">
                <span style="margin-bottom:10px; color:#333333;">
 				   <?php echo $this->__('Currently you have '); ?>
-				   <?php $credit = Mage::getModel('sendinblue/sendinblue')->getSmsCredit(); 
-                                   $notify_value = Mage::getModel('sendinblue/sendinblue')->getNotifyValueStatus();
+				   <?php $credit = $sendinModule->getSmsCredit(); 
+                                   $notify_value = $sendinModule->getNotifyValueStatus();
                                    ?>
                    <?php if ($credit >= $notify_value){ ?> <strong style="color:#000000;"><?php echo $credit; ?></strong><?php } else {?><strong style="color:#F03D25;"><?php echo $credit; ?></strong><?php } ?>
 				    
 				    <?php echo $this->__(' credits sms. To buy more credits, please click'); ?>
-				<a target="_blank" href ="<?php echo $this->__('https://www.sendinblue.com/pricing'); ?>" style="color: #000000; outline: 0 none; text-decoration: none;">
+				<a target="_blank" href ="<?php echo $this->__('https://www.sendinblue.com/pricing?utm_source=magento_plugin&utm_medium=plugin&utm_campaign=module_link'); ?>" style="color: #000000; outline: 0 none; text-decoration: none;">
 				<?php echo $this->__('here'); ?></a></span></td></tr>
                 <tr>
                 <td>
                <label>
 				   <?php echo $this->__('You want to be notified by e-mail when you do not have enough credits?'); ?></label>
-               <input name="sms_credit" <?php if(Mage::getModel('sendinblue/sendinblue')->getNotifySmsStatus()==1) { echo 'checked'; } ?> type="radio" value="1" class="sms_credit radio_nospaceing" style="margin-right:10px;" />
+               <input name="sms_credit" <?php if($notifySmsStatus == 1) { echo 'checked'; } ?> type="radio" value="1" class="sms_credit radio_nospaceing" style="margin-right:10px;" />
                <?php echo $this->__('Yes'); ?>
-               <input name="sms_credit" <?php if(Mage::getModel('sendinblue/sendinblue')->getNotifySmsStatus()==0) { echo 'checked'; } ?> type="radio" value="0" class="sms_credit radio_spaceing2" style="margin-left:20px;margin-right:10px;" />
+               <input name="sms_credit" <?php if($notifySmsStatus == 0) { echo 'checked'; } ?> type="radio" value="0" class="sms_credit radio_spaceing2" style="margin-left:20px;margin-right:10px;" />
                <?php echo $this->__('No'); ?>
                <input name="credit" type="hidden" id="credits" value="<?php echo $this->getUrl('sendinblue/ajax/credit'); ?>" />
                <div class="hideCredit" id="div_email_test" style="padding-top:20px;">
                   <form action="<?php echo $this->getUrl('*/*/sendnotifysms'); ?>"  method="POST" name="notify_sms_mail_form">
-                   <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+                   <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
                      <p class="form-data"><label><?php echo $this->__('Email'); ?></label>
-                        <input name="sendin_notify_email" id="sendin_notify_email" type="text" class="input-text" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getNotifyEmailStatus(); ?>" size="40" />
+                        <input name="sendin_notify_email" id="sendin_notify_email" type="text" class="input-text" value="<?php echo $sendinModule->getNotifyEmailStatus(); ?>" size="40" />
                      </p>
                      <p class="form-data"> <label><?php echo $this->__('Limit'); ?></label>
-                        <input name="sendin_notify_value" id="sendin_notify_value" type="text" class="input-text" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getNotifyValueStatus(); ?>" size="40" /><span class="toolTip" title="<?php echo $this->__('Alert threshold for remaining credits'); ?>">&nbsp;</span>
+                        <input name="sendin_notify_value" id="sendin_notify_value" type="text" class="input-text" value="<?php echo $sendinModule->getNotifyValueStatus(); ?>" size="40" /><span class="toolTip" title="<?php echo $this->__('Alert threshold for remaining credits'); ?>">&nbsp;</span>
                      </p>
                      <p class="form-data" style="width:705px"><input name="notify_sms_mail" type="submit" value="<?php echo $this->__('Save'); ?>"  onclick="return validate('<?php echo $this->__('Please provide valid Email!') ;?>','<?php echo $this->__('Please provide a limit in integer format') ; ?>');" class="button btn" style=" float:right;"/></p>
                      <p class="mrgin-left" style="float:left;"><?php echo $this->__('To get the email notification, you should run '); ?> <a href="<?php echo Mage::helper("adminhtml")->getUrl("sendinblue/adminhtml_notify/index/",array()); ?>" style="color: #000000; outline: 0 none; text-decoration: none;"><?php echo $this->__('this link'); ?> </a> <?php echo $this->__(' atleast one time per day. '); ?>
@@ -349,9 +363,9 @@ $style_smtp = '';
                                     <label class="r_label">
 										<?php echo $this->__('Send SMS after order confirmation'); ?></label>
                                     <div class="radio_bx">
-                                       <input name="sms_order_setting"  <?php if(Mage::getModel('sendinblue/sendinblue')->getOrderSmsStatus()==1) { echo 'checked'; } ?> class="sms_order_setting radio_nospaceing" type="radio" value="1" />
+                                       <input name="sms_order_setting"  <?php if($orderSmsStatus == 1) { echo 'checked'; } ?> class="sms_order_setting radio_nospaceing" type="radio" value="1" />
                                        <?php echo $this->__('Yes'); ?>
-                                       <input name="sms_order_setting" <?php if(Mage::getModel('sendinblue/sendinblue')->getOrderSmsStatus()==0) { echo 'checked'; } ?> class="sms_order_setting radio_spaceing2"  type="radio" value="0" />
+                                       <input name="sms_order_setting" <?php if($orderSmsStatus == 0) { echo 'checked'; } ?> class="sms_order_setting radio_spaceing2"  type="radio" value="0" />
                                        <?php echo $this->__('No'); ?>
                                     </div>
                                     <div style="clear:both;"></div>
@@ -362,7 +376,7 @@ $style_smtp = '';
                                              <tr>
                                                 <td>
                                                    <form method="POST" action="<?php echo $this->getUrl('*/*/sendorder'); ?>" name="sender_order_form">
-                                                   <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+                                                   <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
                                                       <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-list3 no-padding">
                                                          <tr>
                                                             <td class="fix_width2" valign="top">
@@ -370,17 +384,17 @@ $style_smtp = '';
 																   <?php echo $this->__('Sender'); ?></label>
                                                             </td>
                                                             <td>
-                                                               <input name="sender_order"  id="sender_order" type="text" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getSendSmsOrderSubject(); ?>" class="input_bx" autocomplete="off" />
-                                                               <span class="toolTip" title="<?php echo $this->__('This field allows you to personalize the SMS sender. Attention, there is a limited number of characters.If you enter a name, it is limited to 11 characters, and special characters (é, à ...) are not accepted. If you enter a phone number, it is limited to 17 characters; the number should be preceded by 00 and the country code (for instance, for France mobile 06 12 34 56 78 use 0033612345678 with 0033 is France prefix ).'); ?>">&nbsp;</span>
-                                                               <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_order_text">17</span></em>
+                                                               <input name="sender_order"  id="sender_order" type="text" value="<?php echo $sendinModule->getSendSmsOrderSubject(); ?>" class="input_bx" autocomplete="off" />
+                                                               <span class="toolTip" title="<?php echo $this->__('This field allows you to customize the SMS sender. The number of characters is limited to 11 alphanumeric characters. You can´t configure your Sender with a phone number.'); ?>">&nbsp;</span>
+                                                               <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_order_text">11</span></em>
                                                                </div>
-                                                               
+
                                                             </td>
                                                          </tr>
                                                          <tr>
                                                             <td valign="top"><label><?php echo $this->__('Message'); ?></label></td>
                                                             <td>
-                                                               <textarea name="sender_order_message" id="sender_order_message" cols="45" rows="5" class="textarea_bx"><?php echo Mage::getModel('sendinblue/sendinblue')->getSendSmsmOrderMessage(); ?></textarea>
+                                                               <textarea name="sender_order_message" id="sender_order_message" cols="45" rows="5" class="textarea_bx"><?php echo $sendinModule->getSendSmsmOrderMessage(); ?></textarea>
                                                                <span class="toolTip" style="float:left; margin-top: 85px;" title="<?php echo $this->__(' Create the content of your SMS with the limit of 160-character.Beyond 160 characters, it will be counted as a second SMS. Thus, if you write SMS of 240 characters, it will be recorded using two SMS.'); ?>">&nbsp;</span>
                                                                <span style="float:left; line-height:16px; margin-bottom:15px; width:490px; clear:both;"><?php echo $this->__('Number of SMS used: '); ?><span id="sender_order_message_text_count">0</span>
                                                                <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?></em><span id="sender_order_message_text">160</span></div>
@@ -402,7 +416,7 @@ $style_smtp = '';
                                              <tr>
                                                 <td colspan="2" valign="top" border="0">
                                                    <form method="POST" action="<?php echo $this->getUrl('*/*/sendordertest'); ?>" name="sender_order_testForm">
-                                                   <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+                                                   <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
                                                       <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-data">
                                                          <tr>
                                                             <td>
@@ -434,9 +448,9 @@ $style_smtp = '';
                                     <label class="r_label">
 										<?php echo $this->__('Send a SMS confirmation for the shipment of the order'); ?></label>
                                     <div class="radio_bx"> 
-                                       <input name="sms_shiping_setting" <?php if(Mage::getModel('sendinblue/sendinblue')->getShipingSmsStatus()==1) { echo 'checked'; } ?> class="sms_shiping_setting radio_nospaceing" type="radio" value="1" />
+                                       <input name="sms_shiping_setting" <?php if($shipingSmsStatus==1) { echo 'checked'; } ?> class="sms_shiping_setting radio_nospaceing" type="radio" value="1" />
                                        <?php echo $this->__('Yes'); ?>
-                                       <input name="sms_shiping_setting" type="radio" value="0" class="sms_shiping_setting radio_spaceing2" <?php if(Mage::getModel('sendinblue/sendinblue')->getShipingSmsStatus()==0) { echo 'checked'; } ?>/>
+                                       <input name="sms_shiping_setting" type="radio" value="0" class="sms_shiping_setting radio_spaceing2" <?php if($shipingSmsStatus == 0) { echo 'checked'; } ?>/>
                                       <?php echo $this->__('No'); ?>
                                     </div>
                                     <div style="clear:both;"></div>
@@ -448,14 +462,14 @@ $style_smtp = '';
                                                 <td>
                                                 <div class="" style="width:500px;">
                                                    <form method="post" action="<?php echo $this->getUrl('*/*/sendshipment'); ?>" name="sender_shipment_form">
-                                                   <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+                                                   <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
                                                       <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                                          <tr>
                                                             <td class="fix_width2" valign="top"><label><?php echo $this->__('Sender'); ?></label></td>
                                                             <td>
-                                                               <input name="sender_shipment" maxlength="17" id="sender_shipment" type="text" value="<?php echo Mage::getModel('sendinblue/sendinblue')->getSendSmsShipingSubject(); ?>" class="input_bx" autocomplete="off" />
-                                                               <span class="toolTip" title="<?php echo $this->__('This field allows you to personalize the SMS sender. Attention, there is a limited number of characters.If you enter a name, it is limited to 11 characters, and special characters (é, à ...) are not accepted. If you enter a phone number, it is limited to 17 characters; the number should be preceded by 00 and the country code (for instance, for France mobile 06 12 34 56 78 use 0033612345678 with 0033 is France prefix ).'); ?>">&nbsp;</span>
-                                                               <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_shipment_text">17</span></em>
+                                                               <input name="sender_shipment" maxlength="11" id="sender_shipment" type="text" value="<?php echo $sendinModule->getSendSmsShipingSubject(); ?>" class="input_bx" autocomplete="off" />
+                                                               <span class="toolTip" title="<?php echo $this->__('This field allows you to customize the SMS sender. The number of characters is limited to 11 alphanumeric characters. You can´t configure your Sender with a phone number.'); ?>">&nbsp;</span>
+                                                               <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_shipment_text">11</span></em>
                                                                </div>
                                                               
                                                             </td>
@@ -463,7 +477,7 @@ $style_smtp = '';
                                                          <tr>
                                                             <td valign="top"><label><?php echo $this->__('Message'); ?></label></td>
                                                             <td>
-                                                               <textarea name="sender_shipment_message" id="sender_shipment_message" cols="45" rows="5" class="textarea_bx"><?php echo Mage::getModel('sendinblue/sendinblue')->getSendSmsShipingMessage(); ?></textarea>
+                                                               <textarea name="sender_shipment_message" id="sender_shipment_message" cols="45" rows="5" class="textarea_bx"><?php echo $sendinModule->getSendSmsShipingMessage(); ?></textarea>
                                                                <span class="toolTip" style="float:left; margin-top: 85px;" title="<?php echo $this->__(' Create the content of your SMS with the limit of 160-character.Beyond 160 characters, it will be counted as a second SMS. Thus, if you write SMS of 240 characters, it will be recorded using two SMS.'); ?>">&nbsp;</span>
                                                                <span style="float:left; line-height:16px; margin-bottom:15px; width:470px; clear:both;"><?php echo $this->__('Number of SMS used: '); ?><span id="sender_shipment_message_text_count">0</span>
                                                                <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?></em><span id="sender_shipment_message_text">160</span></div>
@@ -486,7 +500,7 @@ $style_smtp = '';
                                              <tr>
                                                 <td colspan="2" valign="top" border="0">
                                                    <form method="post" action="<?php echo $this->getUrl('*/*/sendshipmenttest'); ?>" name="sender_order_testForm">
-                                                   <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+                                                   <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
                                                       <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                                          <tr>
                                                             <td valign="top" colspan="2">
@@ -517,9 +531,9 @@ $style_smtp = '';
                                  <td class="row1 fix_width2">
                                     <label class="r_label"><?php echo $this->__('Send a campaign SMS'); ?></label>
                                     <div class="radio_bx">
-                                       <input name="sms_campaign_setting"  <?php if(Mage::getModel('sendinblue/sendinblue')->getCampaignStatus()==1) { echo 'checked'; } ?> class="sms_campaign_setting radio_nospaceing" type="radio" value="1" />
+                                       <input name="sms_campaign_setting"  <?php if($campaignStatus == 1) { echo 'checked'; } ?> class="sms_campaign_setting radio_nospaceing" type="radio" value="1" />
                                        <?php echo $this->__('Yes'); ?>
-                                       <input name="sms_campaign_setting"  <?php if(Mage::getModel('sendinblue/sendinblue')->getCampaignStatus()==0) { echo 'checked'; } ?> class="sms_campaign_setting radio_spaceing2" type="radio" value="0" />
+                                       <input name="sms_campaign_setting"  <?php if($campaignStatus == 0) { echo 'checked'; } ?> class="sms_campaign_setting radio_spaceing2" type="radio" value="0" />
                                        <?php echo $this->__('No'); ?>
                                     </div>
                                     <div class="hideCampaign">
@@ -529,18 +543,18 @@ $style_smtp = '';
     <tr>
         <td>
       	  <form method="post" action="<?php echo $this->getUrl('*/*/sendcampaign'); ?>" name="sender_campaign_form">
-        <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />	
+        <input name="form_key" type="hidden" value="<?php echo $formKey; ?>" />	
         <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-list3 no-padding" >
         <tr>
         <td class="fix_width2" valign="top"> <label><?php echo $this->__('To'); ?></label></td>
         <td>
-        <input name="Sendin_Sms_Choice" id="r1_Sendin_Sms_Choice" class="Sendin_Sms_Choice radio_nospaceing" type="radio" value="1" <?php if(Mage::getModel('sendinblue/sendinblue')->getShipingSmsStatus()==1) { echo 'checked'; } ?> />
+        <input name="Sendin_Sms_Choice" id="r1_Sendin_Sms_Choice" class="Sendin_Sms_Choice radio_nospaceing" type="radio" value="1" <?php if($shipingSmsStatus == 1) { echo 'checked'; } ?> />
         <?php echo $this->__('A single contact'); ?>
         
-        <input name="Sendin_Sms_Choice" id="r2_Sendin_Sms_Choice" class="Sendin_Sms_Choice radio_spaceing2" type="radio" value="0" <?php if(Mage::getModel('sendinblue/sendinblue')->getShipingSmsStatus()==0) { echo 'checked'; } ?> />
+        <input name="Sendin_Sms_Choice" id="r2_Sendin_Sms_Choice" class="Sendin_Sms_Choice radio_spaceing2" type="radio" value="0" <?php if($shipingSmsStatus == 0) { echo 'checked'; } ?> />
         <?php echo $this->__('All my Magento customers'); ?>
         
-        <input name="Sendin_Sms_Choice" id="r3_Sendin_Sms_Choice" class="Sendin_Sms_Choice radio_spaceing2" type="radio" value="2" <?php if(Mage::getModel('sendinblue/sendinblue')->getShipingSmsStatus()==0) { echo 'checked'; } ?> />
+        <input name="Sendin_Sms_Choice" id="r3_Sendin_Sms_Choice" class="Sendin_Sms_Choice radio_spaceing2" type="radio" value="2" <?php if($shipingSmsStatus == 0) { echo 'checked'; } ?> />
         <?php echo $this->__('Only subscribed customers'); ?>
         </td>
         </tr>
@@ -564,9 +578,9 @@ $style_smtp = '';
         <tr>
         <td valign="top"><label><?php echo $this->__('Sender'); ?></label></td>
         <td>
-        <input name="sender_campaign" maxlength="17" id="sender_campaign" type="text" value="" class="input_bx" autocomplete="off" />
-        <span class="toolTip" title="<?php echo $this->__('This field allows you to personalize the SMS sender. Attention, there is a limited number of characters.If you enter a name, it is limited to 11 characters, and special characters (é, à ...) are not accepted. If you enter a phone number, it is limited to 17 characters; the number should be preceded by 00 and the country code (for instance, for France mobile 06 12 34 56 78 use 0033612345678 with 0033 is France prefix ).'); ?>">&nbsp;</span>
-        <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_campaign_text">17</span></em>
+        <input name="sender_campaign" maxlength="11" id="sender_campaign" type="text" value="" class="input_bx" autocomplete="off" />
+        <span class="toolTip" title="<?php echo $this->__('This field allows you to customize the SMS sender. The number of characters is limited to 11 alphanumeric characters. You can´t configure your Sender with a phone number.'); ?>">&nbsp;</span>
+        <div class="hintmsg"><em><?php echo $this->__('Number of characters left: '); ?><span id="sender_campaign_text">11</span></em>
         </div>
         
         </td>
@@ -589,26 +603,25 @@ $style_smtp = '';
         </table>
         </form> 
          <table width="100%" border="0" cellspacing="0" cellpadding="0" class="form-data">
-                                                         <tr>
-                                                            <td>
-                                                               <div class="hintmsg"><em><?php echo $this->__('Sending a test SMS will be deducted from your SMS credits.'); ?></em></div>
-                                                               <label><?php echo $this->__('Send a test SMS'); ?></label>
-                                                               <input name="sender_campaigntest_number" id="sender_campaigntest_number" maxlength="17" type="text" value="" class="input_bx" />
-                                                               <span class="toolTip" title="<?php echo $this->__('The phone number should be in this form: 0033663309741 for this France mobile 06 63 30 97 41 (0033 is France prefix)'); ?>">&nbsp;</span>
-                                                               <input name="sender_campaignsms_submit" type="button" value="<?php echo $this->__('Send'); ?>" onclick="return testCampaignSmsSend('<?php  echo $this->__('Please fill the Sender field'); ?>','<?php  echo $this->__('Please fill the Message field'); ?>','<?php  echo $this->__('Please fill the Mobile Phone field'); ?>');" class="button btn"  />
-                                                               <input type="hidden" name="smsCampError" id="smsCampError" style="display:none;" value="<?php echo  $this->__('Message has not been sent successfully'); ?>"><input type="hidden"  id="smsCampSuccess" name="smsCampSuccess" value="<?php echo  $this->__('Message has been sent successfully'); ?>">
-                                                            </td>
-                                                         </tr>
-                                                      </table>
+		 <tr>
+			<td>
+			   <div class="hintmsg"><em><?php echo $this->__('Sending a test SMS will be deducted from your SMS credits.'); ?></em></div>
+			   <label><?php echo $this->__('Send a test SMS'); ?></label>
+			   <input name="sender_campaigntest_number" id="sender_campaigntest_number" maxlength="17" type="text" value="" class="input_bx" />
+			   <span class="toolTip" title="<?php echo $this->__('The phone number should be in this form: 0033663309741 for this France mobile 06 63 30 97 41 (0033 is France prefix)'); ?>">&nbsp;</span>
+			   <input name="sender_campaignsms_submit" type="button" value="<?php echo $this->__('Send'); ?>" onclick="return testCampaignSmsSend('<?php  echo $this->__('Please fill the Sender field'); ?>','<?php  echo $this->__('Please fill the Message field'); ?>','<?php  echo $this->__('Please fill the Mobile Phone field'); ?>');" class="button btn"  />
+			   <input type="hidden" name="smsCampError" id="smsCampError" style="display:none;" value="<?php echo  $this->__('Message has not been sent successfully'); ?>"><input type="hidden"  id="smsCampSuccess" name="smsCampSuccess" value="<?php echo  $this->__('Message has been sent successfully'); ?>">
+			</td>
+		 </tr>
+	  </table>
         </td>
     </tr>
 </table>
-                                         
-                                       </div></span>
+							</div></span>
                                  </td>
                               </tr>
                            </table>
-                           </div>     
+                           </div>
                         </div>
                      </div>
                   </div>
@@ -622,7 +635,7 @@ $style_smtp = '';
 <?php  if($get_syncronize == 1) { ?>
 <div class="sendin_row alldiv" <?php echo $style; ?> >
 <fieldset id="my-fieldset" class="fields">
-<legend class="lgend"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_SKIN);?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Contacts list'); ?> </legend>
+<legend class="lgend"><img src="<?php echo $skinUrl;?>adminhtml/default/default/sendinblue/images/logo.gif"> <?php echo $this->__('Contacts list'); ?> </legend>
 
 <input name="ajaxcontentUrl" type="hidden" id="ajaxcontentUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxcontent'); ?>" />
 <input name="ajaxUrl" type="hidden" id="ajaxUrl" value="<?php echo $this->getUrl('sendinblue/ajax/ajaxupdate'); ?>" />
@@ -634,9 +647,9 @@ $style_smtp = '';
 <div id="userGrid">
 <div class="grid">
 <div class="hor-scroll">
-<?php echo $this->__('You have '); ?> <?php  echo Mage::getModel('sendinblue/sendinblue')->getNewsletterSubscribeCount(); ?>
+<?php echo $this->__('You have '); ?> <?php  echo $sendinModule->getNewsletterSubscribeCount(); ?>
 <?php echo $this->__(' contacts subscribed and '); ?>
-<?php echo Mage::getModel('sendinblue/sendinblue')->getNewsletterUnSubscribeCount(); ?> 
+<?php echo $sendinModule->getNewsletterUnSubscribeCount(); ?> 
 <?php echo $this->__(' contacts unsubscribed from Magento.'); ?><span id="Spantextmore" >
 <?php echo $this->__(' For more details,'); ?></span><span id="Spantextless" style="display: none;" >
 <?php echo $this->__(' For less details,'); ?></span><b>
@@ -655,11 +668,10 @@ $style_smtp = '';
 </tr>
 </thead>
 <tbody class='midleft'>
-
 </tbody>
 </table>
-</div></div></div>			
+</div></div></div>
 </fieldset>
-</div>			
+</div>
 <?php  }} ?>
-	
+

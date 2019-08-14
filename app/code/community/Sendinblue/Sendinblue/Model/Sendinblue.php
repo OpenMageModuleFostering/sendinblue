@@ -28,10 +28,12 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	*/
 	public function MIAPI()
 	{
-		$scope = ($this->getScope()) ? $this->getScope() : Mage::app()->getStore()->getStoreId();
+		$scope = ($this->getScope()) ? $this->getScope() : Mage::app()->getStore()->getStoreId();		
 		$this->module_enable = $this->getEnableStatus($scope);		
         $this->api_url = 'http://ws.mailin.fr/';
 		$this->api_key = $this->getApiKey();
+		$value_language = $this->getApiConfigValue();
+		$this->user_language = $value_language->language;
 		if (!$this->lists_ids)
 		$this->lists_ids = str_replace(',', '|', $this->getUserlists($scope));
 
@@ -205,6 +207,16 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		return $apikey;
 	}
 	/**
+	* functions used for get SMPT password
+	*/
+	public function getSmtpPassword()
+	{
+		$smtpPassword = $this->getSendinSmtpStatus('password', Mage::app()->getStore()->getStoreId());
+		if (!$smtpPassword)
+			return false;
+		return $smtpPassword;
+	}
+	/**
 	* functions used for get user name
 	*/
 	public function getUserName()
@@ -229,7 +241,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	*/
 	public function getTrackingStatus()
 	{
-                $status = $this->getSendinTrackingCodeStatus('code', Mage::app()->getStore()->getStoreId());
+		$status = $this->getSendinTrackingCodeStatus('code', Mage::app()->getStore()->getStoreId());
 		if (!$status) {
 			return false;
 		}
@@ -320,30 +332,28 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      */
 	public function emailAdd($email, $extra, $is_subscribed = '')
 	{
+		$attributesName = $this->allAttributesName();
 		if ($this->module_enable == 1 && $this->getSyncronizeStatus())
 		{
 			$apikey = $this->api_key;
 			if (!$apikey)
 				return false;
-			$params                = array();
-			$params['email']       = $email;
-			$params['id']          = '';
+			$params = array();
+			$params['email'] = $email;
+			$params['id'] = '';
 			if ($is_subscribed != '')
 			$params['blacklisted'] = 0;
 
 			if ($extra != null)
 			{
-				$value_langauge = $this->getApiConfigValue();
-                                if ($value_langauge->language == 'fr')
-                                    $params['attributes_name']  = 'PRENOM|NOM|MAGENTO_LANG|CLIENT|SMS';
-                                else
-                                    $params['attributes_name']  = 'NAME|SURNAME|MAGENTO_LANG|CLIENT|SMS';
-                                
-				$params['attributes_value'] = $extra;
+				$key_value = array_keys($attributesName);
+				$attrName = implode('|', $key_value);				
+				$params['attributes_name'] = $attrName;
+				$attrValue = implode('|', $extra);
+				$params['attributes_value'] = $attrValue;
 			} else
-			{  			                   
+			{
 				$params['attributes_value'] = $email;
-									
 			}
 			$params['listid'] = $this->lists_ids;
 
@@ -355,17 +365,17 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      * functions subscribeuser
      */
 	public function emailSubscribe($email)
-	{ 
+	{
 		if ($this->module_enable == 1 && $this->getSyncronizeStatus())
 		{
 			$apikey = $this->api_key;
 			$timezone = Mage::app()->getStore()->getConfig('general/locale/timezone');
 			$timez = str_replace('Calcutta', 'Kolkata', $timezone);
 			$tm = date("Y-m-d H:i:s", Mage::getModel('core/date')->timestamp(time()));
-			
+
 			if (!$apikey)
 				return false;
-			$data = array();						
+			$data = array();
 			$data['key'] = $apikey;
 			$data['webaction']='UPDATE-USER-SUBSCRIPTION-STATUS';
 			$data['timezone'] = $timez;
@@ -373,8 +383,8 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			return $this->curlRequest($data);
 		} else
 			return false;
-		}	
-	
+		}
+
     /**
      * functions used for sync data
      */
@@ -397,16 +407,16 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			{
 				$subscriber_data_email[$s['subscriber_email']] = $s;
             }
-			
+
 			if (count($result_arr) > 0)
 			{
+				$newsletterSub = Mage::getModel('newsletter/subscriber');
 				foreach ($result_arr as $key => $value)
 				{
 					foreach ($value as $user_data)
 					{
 						 if(isset($subscriber_data_email[$user_data->email]))
 						 {
-                                                
 							// on a trouvé le subscriber magento
 							$data = $subscriber_data_email[$user_data->email];
 							$temp_sub_status = ($data['subscriber_status'] == 3) ? 1 : 0;
@@ -415,7 +425,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 								$emails[] = $data['subscriber_email'];
 								$subscribe_data['subscriber_id'] = $data['subscriber_id'];
 								$subscribe_data['subscriber_status'] = ($user_data->blacklisted == 1)?3:1;
-								$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($data['subscriber_email']);
+								$costomer_data = $newsletterSub->loadByEmail($data['subscriber_email']);
 								$costomer_data->setStatus($subscribe_data['subscriber_status']);
 								$costomer_data->setIsStatusChanged(true);
 								$costomer_data->save();
@@ -443,13 +453,13 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             $apikey = $this->api_key;
             if (!$apikey)
                 return false;
-            $params                     = array();
-            $params['email']            = $email;
-            $params['id']               = '';
-            $params['blacklisted']      = 0;
+            $params = array();
+            $params['email'] = $email;
+            $params['id'] = '';
+            $params['blacklisted'] = 0;
             $params['attributes_name']  = '';
             $params['attributes_value'] = '';
-            $params['listid']           = $this->lists_ids;
+            $params['listid'] = $this->lists_ids;
             return $this->callServer('USERCREADITM', $params);
         } else
             return false;
@@ -464,7 +474,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
             $apikey = $this->api_key;
             if (!$apikey)
                 return false;
-            $params           = array();
+            $params = array();
             $params['email']  = $email;
             $params['listid'] = $this->lists_ids;
             return $this->callServer('UNSUBAPI', $params);
@@ -477,18 +487,16 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	public function checkApikey($api_key)
 	{
 		$params['key'] = $api_key;
-		$response      = $this->callServer('DISPLAYLISTDATA', $params);
+		$response = $this->callServer('DISPLAYLISTDATA', $params);
 		if (isset($response->errorMsg) && !empty($response->errorMsg))
 			return $lists['error'] = $response->errorMsg;
-
-
 	}
     /**
      * functions used for smtp details and order tracking
      */
 	public function SmtpDetailsWithTracking()
 	{
-		$params['key'] = $this->api_key;   
+		$params['key'] = $this->api_key; 
 		$response = $this->callServer('TRACKINGDATA', $params);
 		if (isset($response->errorMsg) && !empty($response->errorMsg))
 		{
@@ -497,6 +505,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		}
 		return $response;
 	}
+
     /**
      * Fetches all the list of the user from the Sendinblue platform.
      */
@@ -544,7 +553,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $array = array();
         $list_response = $this->callServer('DISPLAY-FOLDERS-LISTS', $params);
         $list_response = json_encode($list_response);
-        $res          = json_decode($list_response, true);
+        $res = json_decode($list_response, true);
         if (isset($res) && !empty($res))
         {
             foreach ($res as $key => $value)
@@ -566,6 +575,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         }
         return $array;
     }
+
     /**
      *  folder create in Sendinblue after removing from Sendinblue
      */
@@ -627,6 +637,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $this->createNewList($folder_id, $exist_list);
         $this->partnerMagento();
     }
+
     /**
      * Method is used to add the partner's name in Sendinblue.
      * In this case its "MAGENTO".
@@ -637,6 +648,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		$params['partner'] = 'MAGENTO';
 		$this->callServer('MAILIN-PARTNER', $params);
 	}
+
     /**
      * Creates a list by the name "magento" on user's Sendinblue account.
      */
@@ -652,24 +664,75 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         $params                = array();
         $params['listname']    = $list_name;
         $params['list_parent'] = $response;
-        $list_response          = $this->callServer('NEWLIST', $params);
+        $list_response = $this->callServer('NEWLIST', $params);
         $this->sendAllMailIDToSendin($list_response);
         $this->createAttributesName();
     }
+
     /**
+     * Fetch attributes and their values
+     * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
+     */
+   public function allAttributesName()
+   {
+		if ($this->user_language == 'fr')
+			$params = array('PRENOM'=>'firstname', 'NOM'=>'lastname', 'MAGENTO_LANG'=>'created_in','CLIENT'=>'client','SMS'=>'telephone','COMPANY'=>'company','CITY'=>'city','COUNTRY_ID'=>'country_id','POSTCODE'=>'postcode','STREET'=>'street','REGION'=>'region');
+		else
+			$params = array('NAME'=>'firstname', 'SURNAME'=>'lastname', 'MAGENTO_LANG'=>'created_in','CLIENT'=>'client','SMS'=>'telephone','COMPANY'=>'company','CITY'=>'city','COUNTRY_ID'=>'country_id','POSTCODE'=>'postcode','STREET'=>'street','REGION'=>'region');
+		return $params;
+    }
+
+	/**
+     * Fetch attributes name and type
+     * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
+     */
+   public function allAttributesType()
+   {
+		if ($this->user_language == 'fr')
+			$params = array('PRENOM'=>'text', 'NOM'=>'text', 'MAGENTO_LANG'=>'text','CLIENT'=>'number','SMS'=>'text','COMPANY'=>'text','CITY'=>'text','COUNTRY_ID'=>'text','POSTCODE'=>'number','STREET'=>'text','REGION'=>'text');
+		else
+			$params = array('NAME'=>'text', 'SURNAME'=>'text', 'MAGENTO_LANG'=>'text','CLIENT'=>'number','SMS'=>'text','COMPANY'=>'text','CITY'=>'text','COUNTRY_ID'=>'text','POSTCODE'=>'number','STREET'=>'text','REGION'=>'text');
+		return $params;
+    }
+
+    /**
+     * Fetch all Transactional Attributes 
+     * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
+     */
+   public function allTransactionalAttributes()
+   {
+		$params = array('ORDER_ID'=>'id', 'ORDER_DATE'=>'date', 'ORDER_PRICE'=>'number');
+		return $params;
+    }
+
+     /**
      * Create Normal, Transactional, Calculated and Global attributes and their values
      * on Sendinblue platform. This is necessary for the Prestashop to add subscriber's details.
      */
    public function createAttributesName()
    {
-        $value_langauge = $this->getApiConfigValue();
-        $params                             = array();
-        if ($value_langauge->language == 'fr')
-			$params['normal_attributes'] = 'PRENOM,text|NOM,text|MAGENTO_LANG,text|SMS,text|CLIENT,number';
-        else
-            $params['normal_attributes'] = 'NAME,text|SURNAME,text|MAGENTO_LANG,text|SMS,text|CLIENT,number';
-
-        $params['transactional_attributes'] = 'ORDER_ID,id|ORDER_DATE,date|ORDER_PRICE,number';
+        $params = array();
+        $attrData = array();
+        $transData = array();
+        $attributesName = $this->allAttributesName();
+        $attributesType = $this->allAttributesType();
+        $tranArray = $this->allTransactionalAttributes();
+        $keyValue = array_keys($attributesName);
+        foreach ($keyValue as $value)
+        {
+			$attr = $attributesType[$value];
+			$attrData[] = $value.','.$attr;			
+		}
+		$normalAttributes = implode('|', $attrData);
+		$tranKey = array_keys($tranArray);
+		$params['normal_attributes'] = $normalAttributes;
+		foreach ($tranKey as $value)
+        {
+			$attr = $tranArray[$value];
+			$transData[] = $value.','.$attr;			
+		}
+		$transAttributes = implode('|', $transData);
+        $params['transactional_attributes'] = $transAttributes;
 		$this->callServer('ATTRIBUTES_CREATION', $params);
     }
 	/**
@@ -678,25 +741,27 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      */
     public function sendAllMailIDToSendin($list)
     {
-        $allemail = $this->getcustomers();
-        $params = array();
-        $params['webaction'] = 'IMPORTUSERS';
-        $params['key'] = $this->api_key;
-        $params['url'] = Mage::getBaseUrl('media').'sendinblue_csv/ImportSubUsersToSendinblue.csv';
-        $params['listids'] = $list->result;
-		$params['notify_url'] = Mage::getBaseUrl().'sendinblue/ajax/emptySubsUserToSendinblue';
-        $responce_data = $this->curlRequestAsyc($params);
-
         $sendin_switch = new Mage_Core_Model_Config();
-        $sendin_switch->saveConfig('sendinblue/list', $list->result, 'default', 0);
-        $res_value = json_decode($responce_data);
-		$sendin_switch->saveConfig('sendinblue/importOldUserStatus', 0, 'default', 0);
-		if (empty($res_value->process_id))
-		{
-			$sendin_switch->saveConfig('sendinblue/importOldUserStatus', 1);
+        $allemail = $this->getcustomers();
+        if ($allemail > 0)
+        {
+			$params = array();
+			$params['webaction'] = 'IMPORTUSERS';
+			$params['key'] = $this->api_key;
+			$params['url'] = Mage::getBaseUrl('media').'sendinblue_csv/ImportSubUsersToSendinblue.csv';
+			$params['listids'] = $list->result;
+			$params['notify_url'] = Mage::getBaseUrl().'sendinblue/ajax/emptySubsUserToSendinblue';
+			$responce_data = $this->curlRequestAsyc($params);
+			$res_value = json_decode($responce_data);
+			$sendin_switch->saveConfig('sendinblue/importOldUserStatus', 0, 'default', 0);
+			if (empty($res_value->process_id))
+			{
+				$sendin_switch->saveConfig('sendinblue/importOldUserStatus', 1);
+			}						
 		}
-
+		$sendin_switch->saveConfig('sendinblue/list', $list->result, 'default', 0);
     }
+
 	/**
 	* Send SMS from Sendin.
 	*/
@@ -713,18 +778,17 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
     public function sendOrder($mobile)
     {      
 		$sendin_switch = new Mage_Core_Model_Config();
-
 		if (isset($mobile))
 		{
 			$arr = array();
 			$arr['to'] = $mobile;
-			$arr['from'] = Mage::getModel('sendinblue/sendinblue')->getSendSmsOrderSubject();
-			$arr['text'] = Mage::getModel('sendinblue/sendinblue')->getSendSmsmOrderMessage();
+			$arr['from'] = $this->getSendSmsOrderSubject();
+			$arr['text'] = $this->getSendSmsmOrderMessage();
 
-			return $result = Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);			
+			return $result = $this->sendSmsApi($arr);			
 		}
-
     }
+
     public function notifySmsEmail()
     {
 		$sendin_switch = new Mage_Core_Model_Config();
@@ -770,10 +834,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 				$email_template->setSenderEmail($sender_email);
 				$email_template->setTemplateSubject($email_template_variables['text0']);
 				return $email_template->send($email, '', $email_template_variables);
-				
-			}
-			
-			
+			}			
 		}
 		else
 		{
@@ -782,6 +843,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		
 		Mage::getSingleton('core/session')->addSuccess(Mage::helper('sendinblue')->__('Notification mail has been sent'));
 	}
+
 	/**
      * show  SMS  credit from Sendinblue.
      */
@@ -801,6 +863,7 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			}
 		}
 	}
+
     /**
      * Method is used to send test email to the user.
      */
@@ -832,290 +895,194 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 			
 		}
     }
-    
+
+     /**
+     *  This method is used to compare key and value 
+     * return all value in array whose present in array key
+     */
+    public function merge_my_array($one, $two)
+    {
+		$resArr = array();
+		if (count($one) > 0) {
+			foreach($one as $k => $v) {
+				$resArr[$k] = isset($two[$v])?$two[$v]:'';
+			}
+		}
+		return $resArr;
+	}
+
     /**
      *  This method is used to fetch all users from the default customer table to list
      * them in the Sendinblue magento module.
      */
     public function getcustomers()
     {
-        $value_langauge = $this->getApiConfigValue();
-        $data       = array();
+        $data = array();
+        $customer_addr_data = array();
+        $attributesName = $this->allAttributesName();
         $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToSelect('created_in');
+		$customerAddressCollection = Mage::getModel('customer/address')->getCollection();
         foreach ($collection as $customer)
         {
-            $email  = $customer->getData('email');
-            $firstname = $customer->getData('firstname');
-            $lastname = $customer->getData('lastname');
-            $cid = $customer->getData('entity_id');
-            $user_lang = $customer->getData('created_in');
+            $start_detail = array();
+            $resp = array();
+            $respone = array();
 
-            $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
+            $respone = $customer->getData();
+            $email  = $respone['email'];
+            $cid = $respone['entity_id'];
+            $user_lang = $respone['created_in'];
+
+            $collectionAddress = $customerAddressCollection->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$cid);
             $telephone = '';
+            $customer_addr = array();
             foreach ($collectionAddress as $customerPhno) {
-                    $telephone = $customerPhno->getData('telephone');
-                    $country_id = $customerPhno->getData('country_id');
+				$customer_addr = $customerPhno->getData();
+				$customer_addr['client'] = $cid>0?1:0;
             }
-                $customer_select[$email] = array(
-                'email' => $email,
-                'NAME' => $firstname,
-                'SURNAME' => $lastname, 
-                'SMS' => $telephone,
-                'country_id' => $country_id,
-                'MAGENTO_LANG' => $user_lang,
-                'CLIENT' => $cid>0?1:0
-                     );   
+            $customer_addr_data[$email] = array_merge($respone, $customer_addr);
         }
         $newsletterArr = array();
         $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->addFieldToFilter('subscriber_status', array('eq' => 1))->load();
-        $cnt = 0;
-        foreach ( $newsletter->getItems() as $subscriber )
+		$cnt = 0;
+        foreach ( $newsletter->getItems() as $subscriber)
         {
-            $customer_id = $subscriber->getCustomerId();;
-            $subscriber_email = $subscriber->getSubscriberEmail();
-            $subscriber_status = $subscriber->getSubscriberStatus();
-
-            if ( !empty($customer_select[$subscriber_email]) ) {
-                    $newsletterArr[$cnt] = $customer_select[$subscriber_email];
-                    $newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-                    unset($customer_select[$subscriber_email]);
-            }
-            else {
-                       $newsletterArr[$cnt] = array(
-                                                    'email' => $subscriber_email,
-                                                    'NAME' => '',
-                                                    'SURNAME' => '',
-                                                    'MAGENTO_LANG' => '',
-                                                    'SMS' => '',
-                                                    'country_id' => ''
-                                                            );
-                    $newsletterArr[$cnt]['CLIENT'] = $customer_id>0?1:0;
-                    $newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-            }
-            $cnt++;
+			$subsdata = $subscriber->getData();
+            $subscriber_email = $subsdata['subscriber_email'];
+            
+			if ( !empty($customer_addr_data[$subscriber_email]) ) {
+			$customer_addr_data[$subscriber_email]['email'] = $subscriber_email;
+			$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email]);
+			$resp[$cnt]['EMAIL'] = $subscriber_email;
+			}
+			else
+			{
+				$newsletterArr['client'] = $subsdata['customer_id']>0?1:0;
+				$resp[$cnt] = $this->merge_my_array($attributesName, $newsletterArr);
+				$resp[$cnt]['EMAIL'] = $subscriber_email;
+			}
+                $cnt++;
 	}
-      
 
      if (!is_dir(Mage::getBaseDir('media').'/sendinblue_csv'))
         mkdir(Mage::getBaseDir('media').'/sendinblue_csv', 0777, true);
-    if ($value_langauge->language == 'fr')
-       {      
+
          $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
-         $key_value[] = 'EMAIL,PRENOM,NOM,MAGENTO_LANG,SMS,CLIENT';
-         foreach ($key_value as $linedata)
-         fwrite($handle, $linedata."\n");
-       }
-   else {
-         $handle = fopen(Mage::getBaseDir('media').'/sendinblue_csv/ImportSubUsersToSendinblue.csv', 'w+');
-         $key_value[] = 'EMAIL,NAME,SURNAME,MAGENTO_LANG,SMS,CLIENT';
-         foreach ($key_value as $linedata)
-         fwrite($handle, $linedata."\n");
+         $key_value = array_keys($attributesName);
+         $key_value[] = 'EMAIL';
+         fwrite($handle, implode(',', $key_value)."\n");
 
-       }
-
-    foreach ($newsletterArr as $newsdata)
-    {
-        if(!empty($newsdata['country_id']))
-        {
-            $tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
-			$sql = 'SELECT country_prefix  FROM '.$tableCountry.' WHERE iso_code = "'.$newsdata['country_id'].'"';
-            $country_id = Mage::getSingleton('core/resource') ->getConnection('core_read')->fetchRow($sql);
-        }
-        if(!empty($newsdata['SMS']))
-          $phone_number = $this->checkMobileNumber($newsdata['SMS'], $country_id['country_prefix']);
-        else
-        $phone_number = '';
-
-               if ($value_langauge->language == 'fr')
-                  {   
-                    $key_value = array(
-                    'email' => $newsdata['email'],
-                    'PRENOM' => $newsdata['NAME']?$newsdata['NAME']:'',
-                    'NOM' => $newsdata['SURNAME']?$newsdata['SURNAME']:'',
-                    'MAGENTO_LANG' => $newsdata['MAGENTO_LANG']?$newsdata['MAGENTO_LANG']:'',
-                    'SMS' => $phone_number?$phone_number:'',
-                    'CLIENT' => $newsdata['CLIENT']
-                         );
-                 }
-                    else {
-                         $key_value = array(
-                            'email' => $newsdata['email'],
-                            'NAME' => $newsdata['NAME']?$newsdata['NAME']:'',
-                            'SURNAME' => $newsdata['SURNAME']?$newsdata['SURNAME']:'',
-                            'MAGENTO_LANG' => $newsdata['MAGENTO_LANG']?$newsdata['MAGENTO_LANG']:'',
-                            'SMS' => $phone_number?$phone_number:'',
-                            'CLIENT' => $newsdata['CLIENT']
-                             );   
-                          }
-       fputcsv($handle, $key_value);
-
-    }  fclose($handle);
+		foreach ($resp as $newsdata)
+		{
+			if(!empty($newsdata['COUNTRY_ID']) && !empty($newsdata['SMS']))
+			{
+				$country_id = $this->getCountryCode($newsdata['COUNTRY_ID']);
+				$newsdata['SMS'] = $this->checkMobileNumber($newsdata['SMS'], $country_id);
+			}
+			$key_value = $newsdata;
+			fwrite($handle, implode(',', $key_value)."\n");
+		}
+		fclose($handle);
+		$total_value = count($resp);
+		return $total_value;
     }
+
     /**
      *  This method is used to fetch all users from the default newsletter table to list
      * them in the Sendinblue magento module.
      */
 	public function getNewsletterSubscribe($start, $per_page)
 	{
-         $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
+		$customer_addr_data = array();
+        $attributesName = $this->allAttributesName();
+        $attributesName['email'] = 'email';
+        $attributesName['customer_id'] = 'entity_id';
         
+        $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email');
+		$customerAddressCollection = Mage::getModel('customer/address')->getCollection();
         foreach ($collection as $customer)
         {
-            $email = $customer->getData('email');
-            $cid = $customer->getData('entity_id');
-			
-            $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
+            $start_detail = array();
+            $resp = array();
+            $respone = array();
+
+            $respone = $customer->getData();
+            $email  = $respone['email'];
+            $cid = $respone['entity_id'];
+            $user_lang = $respone['created_in'];
+
+            $collectionAddress = $customerAddressCollection->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
             $telephone = '';
-			foreach ($collectionAddress as $customerPhno) {
-				$telephone = $customerPhno->getData('telephone');
-				$country_id = $customerPhno->getData('country_id');
-			}
-            
-			$customer_select[$email] = array(
-                'email' => $email, 
-				'telephone' => $telephone,
-				'country_id' => $country_id,
-				'customer_id' => $cid
-            );
+            $customer_addr = array();
+            foreach ($collectionAddress as $customerPhno) {
+				$customer_addr = $customerPhno->getData();
+				if (!empty($customer_addr['telephone']) && !empty($customer_addr['country_id']))
+				{
+					$country_code = $this->getCountryCode($customer_addr['country_id']);
+					$customer_addr['telephone'] = $this->checkMobileNumber($customer_addr['telephone'], $country_code);
+				}
+				$customer_addr['client'] = $cid>0?1:0;
+            }
+            $customer_addr_data[$email] = array_merge($respone, $customer_addr);
         }
-
-		$newsletterArr = array();
-		$newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
-		
+        $newsletterArr = array();
+        $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
 		$cnt = 0;
-		foreach ( $newsletter->getItems() as $subscriber )
-		{
-			$customer_id = $subscriber->getCustomerId();;
-			$subscriber_email = $subscriber->getSubscriberEmail();
-			$subscriber_status = $subscriber->getSubscriberStatus();
-			
-			if ( !empty($customer_select[$subscriber_email]) ) {
-				$newsletterArr[$cnt] = $customer_select[$subscriber_email];
-				$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-				unset($customer_select[$subscriber_email]);
-			}
-			else {
-				$newsletterArr[$cnt] = array(
-										'email' => $subscriber_email,
-										'telephone' => '',
-										'country_id' => ''
-									);
-				$newsletterArr[$cnt]['customer_id'] = $customer_id;
-				$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-			}
-			$cnt++;
-		}
-		
-		if ( count($customer_select) > 0 ) {
-			foreach ( $customer_select as $cData ) {
-				$newsletterArr[$cnt] = $cData;
-				$newsletterArr[$cnt]['subscriber_status'] = 3;
-				$cnt++;
-			}
-		}	
-		
-		return array_slice($newsletterArr, $start, $per_page, true);		
-    }
-    /**
-     *  This method is used to fetch total count users from the default newsletter table to list
-     * them in the Sendinblue magento module.
-     */
-    public function getTotalCount()
-    {
-        $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname');
-        foreach ($collection as $customer)
+        foreach ( $newsletter->getItems() as $subscriber)
         {
-			
-			$email            = $customer->getData('email');
-            $firstname        = $customer->getData('firstname');
-            $lastname         = $customer->getData('lastname');
-			$cid 			  =	$customer->getData('entity_id');
-			
-			$collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
-			$telephone = '';
-			foreach ($collectionAddress as $customerPhno) {
-				$telephone = $customerPhno->getData('telephone');
-				$country_id = $customerPhno->getData('country_id');
+			$subsdata = $subscriber->getData();
+            $subscriber_email = $subsdata['subscriber_email'];
+            $subscriber_status = $subsdata['subscriber_status'];
+			if ( !empty($customer_addr_data[$subscriber_email]) ) {
+			$customer_addr_data[$subscriber_email]['email'] = $subscriber_email;
+			$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email]);
+			$resp[$cnt]['subscriber_status'] = $subscriber_status;
+			$resp[$cnt]['email'] = $subscriber_email;
 			}
-            
-			$customer_select[$email] = array(
-                'email' => $email,
-                'firstname' => $firstname,
-                'lastname' => $lastname, 
-				'telephone' => $telephone,
-				'country_id' => $country_id,
-				'customer_id' => $cid
-            );
-        }
-
-		$newsletterArr = array();
-		$newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
-		
-		$cnt = 0;
-		foreach ( $newsletter->getItems() as $subscriber )
-		{
-			$customer_id = $subscriber->getCustomerId();;
-			$subscriber_email = $subscriber->getSubscriberEmail();
-			$subscriber_status = $subscriber->getSubscriberStatus();
-			
-			if ( !empty($customer_select[$subscriber_email]) ) {
-				$newsletterArr[$cnt] = $customer_select[$subscriber_email];
-				$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-				unset($customer_select[$subscriber_email]);
+			else
+			{
+				$newsletterArr['client'] = $subsdata['customer_id']>0?1:0;
+				$resp[$cnt] = $this->merge_my_array($attributesName, $newsletterArr);
+				$resp[$cnt]['subscriber_status'] = $subscriber_status;
+				$resp[$cnt]['email'] = $subscriber_email;
 			}
-			else {
-				$newsletterArr[$cnt] = array(
-										'email' => $subscriber_email,
-										'firstname' => '',
-										'lastname' => '', 
-										'telephone' => '',
-										'country_id' => ''
-									);
-				$newsletterArr[$cnt]['customer_id'] = $customer_id;
-				$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-			}
-			$cnt++;
+                $cnt++;
 		}
-		
-		if ( count($customer_select) > 0 ) {
-			foreach ( $customer_select as $cData ) {
-				$newsletterArr[$cnt] = $cData;
-				$newsletterArr[$cnt]['subscriber_status'] = 3;
-				$cnt++;
-			}
-		}	
-					
-		return count($newsletterArr);
+		return array_slice($resp, $start, $per_page, true);		
     }
+
     /**
      *  This method is used to fetch total count unsubscribe users from the default newsletter table to list
      * them in the Sendinblue magento module.
      */
 	public function getNewsletterUnSubscribeCount()
 	{
-                $tableCustomer = Mage::getSingleton('core/resource')->getTableName('customer/entity');
-				$tableNewsletter = Mage::getSingleton('core/resource')->getTableName('newsletter/subscriber');
-				$sql = 'SELECT count(*) as totalcoutn FROM '.$tableCustomer.' CE 
-                LEFT JOIN '.$tableNewsletter.' NS
-                ON CE.entity_id=NS.customer_id WHERE subscriber_status != 1 or subscriber_status is null';
-                $unsubs_count1 = Mage::getSingleton('core/resource') ->getConnection('core_read')->fetchRow($sql);
-                
-                $sql = 'SELECT count(*) as totalcoutn FROM '.$tableNewsletter.' WHERE customer_id = 0 AND subscriber_status = 3';
-                $unsubs_count2 = Mage::getSingleton('core/resource') ->getConnection('core_read')->fetchRow($sql);
-                return ($unsubs_count1['totalcoutn'] + $unsubs_count2['totalcoutn']);
-            
+		$coreResource = Mage::getSingleton('core/resource');
+		$tableCustomer = $coreResource->getTableName('customer/entity');
+		$tableNewsletter = $coreResource->getTableName('newsletter/subscriber');
+		$sql = 'SELECT count(*) as totalcoutn FROM '.$tableCustomer.' CE 
+		LEFT JOIN '.$tableNewsletter.' NS
+		ON CE.entity_id=NS.customer_id WHERE subscriber_status != 1 or subscriber_status is null';
+		$unsubs_count1 = $coreResource->getConnection('core_read')->fetchRow($sql);
+
+		$sql = 'SELECT count(*) as totalcoutn FROM '.$tableNewsletter.' WHERE customer_id = 0 AND subscriber_status = 3';
+		$unsubs_count2 = $coreResource->getConnection('core_read')->fetchRow($sql);
+		return ($unsubs_count1['totalcoutn'] + $unsubs_count2['totalcoutn']);            
 	}
+
 	/**
      *  This method is used to fetch total count subscribe users from the default newsletter table to list
      * them in the Sendinblue magento module.
     */
 	public function getNewsletterSubscribeCount()
 	{
-		$tableNewsletter = Mage::getSingleton('core/resource')->getTableName('newsletter/subscriber');
+		$coreResource = Mage::getSingleton('core/resource');
+		$tableNewsletter = $coreResource->getTableName('newsletter/subscriber');
 		$sql = 'SELECT count(*) as totalvalue from '.$tableNewsletter.' where subscriber_status = 1';
-                $data = Mage::getSingleton('core/resource') ->getConnection('core_read')->fetchRow($sql);
+        $data = $coreResource->getConnection('core_read')->fetchRow($sql);
 		return $data['totalvalue'];
 	}
+
     /**
      * This method is used to check the subscriber's newsletter subscription status in Sendinblue
      */
@@ -1125,35 +1092,38 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
         foreach ($result as $subscriber)
             $userstatus[] = $subscriber['email'];
         $email = implode(',', $userstatus);
-        $params          = array();
+        $params = array();
         $params['key']   = $this->api_key;
         $params['email'] = $email;
-        $response        = $this->callServer('USERS-STATUS-BLACKLIST', $params);
-        $response        = json_encode($response);
+        $response = $this->callServer('USERS-STATUS-BLACKLIST', $params);
+        $response = json_encode($response);
         return json_decode($response, true);
     }
+
     /**
      * Fetches the SMTP and order tracking details
      */
     public function TrackingSmtp()
     {
-        $params        = array();
+        $params = array();
         $params['key'] = $this->api_key;
         return $this->callServer('TRACKINGDATA', $params);
     }
+
     /**
      * CURL function to send request to the Sendinblue API server
      */
    public function callServer($method, $params)
    {
-        $host                = $this->api_url;
-        $params['key']       = (isset($params['key']) && !empty($params['key'])) ? $params['key'] : $this->api_key;
+        $host = $this->api_url;
+        $params['key'] = (isset($params['key']) && !empty($params['key'])) ? $params['key'] : $this->api_key;
         $params['webaction'] = $method;
-        $this->error_message  = '';
-        $this->error_code     = '';
-        $response            = $this->curlRequest($params);
+        $this->error_message = '';
+        $this->error_code = '';
+        $response = $this->curlRequest($params);
         return json_decode($response);
    }
+
     /**
      * CURL function to send request to the Sendinblue API server
      */
@@ -1162,13 +1132,14 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		$url = $this->api_url; // WS URL
 		$ch    = curl_init();
 		$ndata = '';
-                $data['source'] = 'MagentoNew';
+        $data['source'] = 'MagentoNew';
 		if (is_array($data))
 		{
 			foreach ($data as $key => $value)
 				$ndata .= $key.'='.urlencode($value).'&';
-		} else
-			$ndata = $data;
+		}
+		else
+		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 			'Expect:'
 		));	
@@ -1189,16 +1160,17 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
      */
 	public function curlRequestAsyc($data)
 	{
-		$url   = $this->api_url; // WS URL
-		$ch    = curl_init();
+		$url = $this->api_url; // WS URL
+		$ch = curl_init();
 		$ndata = '';
         $data['source'] = 'MagentoNew';
 		if (is_array($data))
 		{
 			foreach ($data as $key => $value)
 				$ndata .= $key.'='.urlencode($value).'&';
-		} else
-			$ndata = $data;
+		}
+		else
+		$ndata = $data;
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 			'Expect:'
 		));	
@@ -1231,124 +1203,94 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	}
 	protected function _uninstallResourceDb($version)
     {
-        Mage::dispatchEvent('module_uninstall', array('resource' => $this->_resourceName));
-        
+        Mage::dispatchEvent('module_uninstall', array('resource' => $this->_resourceName));        
         $this->_modifyResourceDb(self::TYPE_DB_UNINSTALL, $version, '');
         return $this;
     }
+
     /**
      *  This method is used to fetch all subscribe users from the default customer table to list
      * them in the Sendinblue magento module.
      */
     public function smsCampaignList()
     {
-        $value_langauge = $this->getApiConfigValue();
-        $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname');
+        $customer_addr_data = array();
+        $attributesName = $this->allAttributesName();
+        $collection = Mage::getModel('customer/customer')->getCollection()->addAttributeToSelect('email')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToSelect('created_in');
+		$customerAddressCollection = Mage::getModel('customer/address')->getCollection();
         foreach ($collection as $customer)
         {
+            $start_detail = array();
+            $resp = array();
+            $respone = array();
 
-                $email  = $customer->getData('email');
-                $firstname = $customer->getData('firstname');
-                $lastname  = $customer->getData('lastname');
-                $cid = $customer->getData('entity_id');
+            $respone = $customer->getData();
+            $email  = $respone['email'];
+            $cid = $respone['entity_id'];
+            $user_lang = $respone['created_in'];
 
-                $collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToFilter('parent_id',(int)$cid);
-                $telephone = '';
-                foreach ($collectionAddress as $customerPhno) {
-                        $telephone         = $customerPhno->getData('telephone');
-                        $country_id         = $customerPhno->getData('country_id');
-                }
-
-                 if ($value_langauge->language == 'fr')
-                        {   
-                            $customer_select[$email] = array(
-                            'email' => $email,
-                            'PRENOM' => $firstname,
-                            'NOM' => $lastname, 
-				'SMS' => $telephone,
-				'country_id' => $country_id,
-				'CLIENT' => $cid>0?1:0
-                                 );
-                      }
-                    else {
-                         $customer_select[$email] = array(
-                            'email' => $email,
-                            'NAME' => $firstname,
-                            'SURNAME' => $lastname, 
-				'SMS' => $telephone,
-				'country_id' => $country_id,
-				'CLIENT' => $cid>0?1:0
-                                 );   
-                    }
+            $collectionAddress = $customerAddressCollection->addAttributeToSelect('telephone')->addAttributeToSelect('country_id')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',(int)$cid);
+            $telephone = '';
+            $customer_addr = array();
+            foreach ($collectionAddress as $customerPhno) {
+				$customer_addr = $customerPhno->getData();
+				if (!empty($customer_addr['telephone']) && !empty($customer_addr['country_id']))
+				{
+					$country_code = $this->getCountryCode($customer_addr['country_id']);
+					$customer_addr['telephone'] = $this->checkMobileNumber($customer_addr['telephone'], $country_code);	  
+				}
+				$customer_addr['client'] = $cid>0?1:0;
+            }
+            $customer_addr_data[$email] = array_merge($respone, $customer_addr);
         }
-
         $newsletterArr = array();
-        $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->load();
-        $cnt = 0;
-        foreach ( $newsletter->getItems() as $subscriber )
+        $newsletter = Mage::getResourceModel('newsletter/subscriber_collection')->addFieldToFilter('subscriber_status', array('eq' => 1))->load();
+		$cnt = 0;
+        foreach ( $newsletter->getItems() as $subscriber)
         {
-                $customer_id = $subscriber->getCustomerId();;
-                $subscriber_email = $subscriber->getSubscriberEmail();
-                $subscriber_status = $subscriber->getSubscriberStatus();
-
-                if ( !empty($customer_select[$subscriber_email]) ) {
-                        $newsletterArr[$cnt] = $customer_select[$subscriber_email];
-                        $newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-                        unset($customer_select[$subscriber_email]);
-                }
-                else {
-                       if ($value_langauge->language == 'fr')
-                                {   
-                                $newsletterArr[$cnt] = array(
-										'email' => $subscriber_email,
-										'PRENOM' => '',
-										'NOM' => '', 
-										'SMS' => '',
-										'country_id' => ''
-									);
-				$newsletterArr[$cnt]['CLIENT'] = $customer_id>0?1:0;
-				$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status;
-                                }
-                                else
-                                {
-                                   $newsletterArr[$cnt] = array(
-										'email' => $subscriber_email,
-										'NAME' => '',
-										'SURNAME' => '', 
-										'SMS' => '',
-										'country_id' => ''
-									);
-				$newsletterArr[$cnt]['CLIENT'] = $customer_id>0?1:0;
-				$newsletterArr[$cnt]['subscriber_status'] = $subscriber_status; 
-                                }
-                }
+			$subsdata = $subscriber->getData();
+            $subscriber_email = $subsdata['subscriber_email'];
+            $subscriber_status = $subsdata['subscriber_status'];
+			if ( !empty($customer_addr_data[$subscriber_email]) ) {
+				$customer_addr_data[$subscriber_email]['email'] = $subscriber_email;
+				$resp[$cnt] = $this->merge_my_array($attributesName, $customer_addr_data[$subscriber_email]);
+				$resp[$cnt]['EMAIL'] = $subscriber_email;
+				$resp[$cnt]['subscriber_status'] = $subscriber_status;
+			}
+			else
+			{
+				$newsletterArr['client'] = $subsdata['customer_id']>0?1:0;
+				$resp[$cnt] = $this->merge_my_array($attributesName, $newsletterArr);
+				$resp[$cnt]['EMAIL'] = $subscriber_email;
+				$resp[$cnt]['subscriber_status'] = $subscriber_status;
+			}
                 $cnt++;
-        }
-        $i = 0;
-        $data = array();
-        foreach($newsletterArr as $result) 
-					{					
-						
-						if(!empty($result['SMS']))
-						{ 
-							$data[$i]= $result; 
-						}
-						  $i++;
-                    }
-        return json_encode($data);
+	}
+		$i = 0;
+		$data = array();
+		foreach($resp as $result) 
+		{					
+			if(!empty($result['SMS']))
+			{ 
+				$data[$i]= $result; 
+			}
+			$i++;
+		}
+		return json_encode($data);
     }
     /**
     * API config value from SendinBlue.
     */
     public function getApiConfigValue()
     {
-            $data = array();
-            $data['key'] = $this->api_key;
-            $data['webaction'] = 'PLUGIN-CONFIG';
-            $value_config = $this->curlRequest($data);
-            $result = json_decode($value_config);
-            return $result;
+		$data = array();
+		$data['key'] = $this->api_key;
+		$data['webaction'] = 'PLUGIN-CONFIG';
+		$value_config = $this->curlRequest($data);
+		$result = json_decode($value_config);
+		return $result;
     }
+
 	/**
 	* Send template email by sendinblue for newsletter subscriber user  .
 	*/
@@ -1356,33 +1298,31 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 	{
 		$mail_url = "http://mysmtp.mailin.fr/ws/template/"; //Curl url
 
-		$key = $this->api_key;
+		$smtpPassword = $this->getSmtpPassword();
 		$user = $this->getUserName();
-
 		$to = str_replace('+', '%2B', $to);
 		$temp_id_value = $this->getTemplateId();
-		$templateid = !empty($temp_id_value) ? $temp_id_value : ''; // should be the campaign id of template created on mailin. Please remember this template should be active than only it will be sent, otherwise it will return error.
+		// should be the campaign id of template created on mailin. Please remember this template should be active than only it will be sent, otherwise it will return error.
+		$templateid = !empty($temp_id_value) ? $temp_id_value : '';
 
-		$post_data = "to=$to&key=$key&user=$user&templateid=$templateid";
-
+		$post_data['to'] = $to;
+		$post_data['key'] = $smtpPassword;
+		$post_data['user'] = $user;
+		$post_data['templateid'] = $templateid;
+		$post_data = http_build_query($post_data);
 		$ch = curl_init();
 
 		curl_setopt ($ch, CURLOPT_POST, 1);
-
 		curl_setopt ($ch, CURLOPT_URL, $mail_url);
-
 		curl_setopt ($ch, CURLOPT_POSTFIELDS, $post_data);
-
 		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
-
 		$return_data = curl_exec ($ch);
-
 		curl_close ($ch);
 
 		$res = json_decode($return_data, true);
 		return $res;
-
 	}
+
 	/**
 	* Get all temlpate list id by sendinblue.
 	*/
@@ -1394,6 +1334,17 @@ class Sendinblue_Sendinblue_Model_Sendinblue extends Mage_Core_Model_Abstract
 		$data['show'] = 'ALL';
 		$data['messageType'] = 'template';
 		return json_decode($this->curlRequest($data));
+	}
 
-	}	
+	/**
+	* Get getCountryCode from sendinblue_country table,
+	*/
+	public function getCountryCode($countryid)
+	{
+		$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
+		$sql = 'SELECT country_prefix  FROM '.$tableCountry.' WHERE iso_code = "'.$countryid.'"';
+		$country_id = Mage::getSingleton('core/resource') ->getConnection('core_read')->fetchRow($sql);
+		$country_prefix = $country_id['country_prefix'];
+		return $country_prefix;
+	}
 }

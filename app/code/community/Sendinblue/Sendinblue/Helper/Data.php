@@ -30,9 +30,6 @@ class Sendinblue_Sendinblue_Helper_Data extends Mage_Core_Helper_Abstract
 			$config['port'] = $port;
 			$config['ssl'] = null;
 			$config['auth'] = $auth;
-			//echo "<pre>";
-			//print_r($config);
-			//die;
 			$transport = new Zend_Mail_Transport_Smtp($host, $config);
 		}
 		else

@@ -17,10 +17,8 @@ class Sendinblue_Sendinblue_Model_Email_Template extends Mage_Core_Model_Email_T
     	// If it's not enabled, just return the parent result.
     	if (Mage::helper('sendinblue')->isEnabled()==0 || Mage::helper('sendinblue')->ModuleisEnabled()==0) { 
         	 return parent::send($email, $name, $variables);  
-		} 
-		
-		
-		
+		}
+
     	if(!$this->isValidForSend()) {
 			Mage::log('SMTP: Email not valid for sending - check template, and smtp enabled/disabled setting');    	
     		Mage::logException(new Exception('This letter cannot be sent.')); // translation is intentionally omitted
@@ -40,24 +38,17 @@ class Sendinblue_Sendinblue_Model_Email_Template extends Mage_Core_Model_Email_T
         $variables['name'] = reset($names);
         
         $mail = $this->getMail();
-        
-       	
-       	
-        if (true) {
-        	
+
+        if (true) {        	
 			$email = Mage::getStoreConfig('contacts/email/recipient_email', $this->getDesignConfig()->getStore());
-			Mage::log("Development mode set to send all emails to contact form recipient: " . $email);
-			
+			Mage::log("Development mode set to send all emails to contact form recipient: " . $email);			
         } 
         
-        // In Magento core they set the Return-Path here, for the sendmail command.
-       
+        // In Magento core they set the Return-Path here, for the sendmail command.       
         
         foreach ($emails as $key => $email) {
             $mail->addTo($email, '=?utf-8?B?' . base64_encode($names[$key]) . '?=');
         }
-        
-
         $this->setUseAbsoluteLinks(true);
         $text = $this->getProcessedTemplate($variables, true);
 
@@ -69,8 +60,6 @@ class Sendinblue_Sendinblue_Model_Email_Template extends Mage_Core_Model_Email_T
 
         $mail->setSubject('=?utf-8?B?'.base64_encode($this->getProcessedTemplateSubject($variables)).'?=');
         $mail->setFrom($this->getSenderEmail(), $this->getSenderName());
-
-
 		$transport = Mage::helper('sendinblue')->getTransport();
 
         try {
@@ -88,8 +77,6 @@ class Sendinblue_Sendinblue_Model_Email_Template extends Mage_Core_Model_Email_T
 	        $mail->send($transport); // Zend_Mail warning..
 	       
 		    Mage::log('Finished sending email');
-		   
-        	
 	        $this->_mail = null;
         } catch (Exception $e) {
 			
@@ -99,6 +86,5 @@ class Sendinblue_Sendinblue_Model_Email_Template extends Mage_Core_Model_Email_T
         }
 		$responceArr = array('result'=>true);
 		return json_encode($responceArr);
-
     }
 }

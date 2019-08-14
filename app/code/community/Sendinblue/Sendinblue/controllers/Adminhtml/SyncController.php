@@ -8,12 +8,11 @@
 * needs then we can't provide a technical support.
 **/
 
-class Sendinblue_Sendinblue_Adminhtml_NotifyController extends Mage_Adminhtml_Controller_Action
+class Sendinblue_Sendinblue_Adminhtml_SyncController extends Mage_Adminhtml_Controller_Action
 {
 	public function indexAction()
-	{
-		$responce = Mage::getModel('sendinblue/sendinblue')->notifySmsEmail();
-		
+	{   
+	    $responce = Mage::getModel('sendinblue/sendinblue')->syncData();
 		$msg_disp = $this->__('The CRON has been well executed.');
 		Mage::getSingleton('adminhtml/session')->addSuccess($msg_disp);
 		$this->_redirect("sendinblue/adminhtml_myform/");

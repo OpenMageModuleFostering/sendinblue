@@ -9,7 +9,7 @@
 **/
 class Sendinblue_Sendinblue_Model_Observer
 {
-	protected static $fields = array ();
+	protected static $fields = array();
 	public function adminSubcriberDelete($observer)
 	{
 		$params = Mage::app()->getRequest()->getParams();
@@ -17,9 +17,10 @@ class Sendinblue_Sendinblue_Model_Observer
 		if (isset($params['subscriber']) && count($params['subscriber'] > 0))
 		{
 			$customer_email = array();
+			$nbSubscriber = Mage::getModel('newsletter/subscriber');
 			foreach ($params['subscriber'] as $costomer_id)
 			{
-				$costomer_data = Mage::getModel('newsletter/subscriber')->load($costomer_id)->toArray();
+				$costomer_data = $nbSubscriber->load($costomer_id)->toArray();
 				$customer_email[] = empty($costomer_data['subscriber_email'])?array():$costomer_data['subscriber_email'];
 			}
 			$customer_emails = implode('|', $customer_email);
@@ -29,6 +30,7 @@ class Sendinblue_Sendinblue_Model_Observer
 			Mage::getSingleton('core/session')->addSuccess('Total of '.$responce->result->unsubEmailsCounts.' record(s) were Unsubscribed');
 		return $this;
 	}
+
 	public function adminCustomerDelete($observer)
 	{
 		$params = Mage::app()->getRequest()->getParams();
@@ -36,9 +38,10 @@ class Sendinblue_Sendinblue_Model_Observer
 		if (isset($params['customer']) && count($params['customer'] > 0))
 		{
 			$customer_email = array();
+			$customerObj = Mage::getModel('customer/customer');
 			foreach ($params['customer'] as $costomer_id)
 			{
-				$costomer_data = Mage::getModel('customer/customer')->load($costomer_id)->toArray();
+				$costomer_data = $customerObj->load($costomer_id)->toArray();
 				$customer_email[] = empty($costomer_data['email'])?array():$costomer_data['email'];
 			}
 			$customer_emails = implode('|', $customer_email);
@@ -55,9 +58,10 @@ class Sendinblue_Sendinblue_Model_Observer
 		if (isset($params['customer']) && count($params['customer'] > 0))
 		{
 			$customer_email = array();
+			$customerObj = Mage::getModel('customer/customer');
 			foreach ($params['customer'] as $costomer_id)
 			{
-				$costomer_data = Mage::getModel('customer/customer')->load($costomer_id)->toArray();
+				$costomer_data = $customerObj->load($costomer_id)->toArray();
 				$customer_email[] = empty($costomer_data['email'])?array():$costomer_data['email'];
 			}
 			$customer_emails = implode('|', $customer_email);
@@ -71,101 +75,82 @@ class Sendinblue_Sendinblue_Model_Observer
 	{
 		$params = Mage::app()->getRequest()->getParams();
 		$params = empty($params)?array():$params;
+		$extra = array();
+		$sendinModule = Mage::getModel('sendinblue/sendinblue');
+		$attributesName = $sendinModule->allAttributesName();
+
 		if ($params['email'] != '')
 		$newsletter_status = 0;
-		
+
 		$client = 0;
-		$extra = ''.'|'.''.'|'.''.'|'.$client.'|'.'';		
-		$responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($params['email'], $extra, $newsletter_status);
+		$resp = $sendinModule->merge_my_array($attributesName, $extra);
+		$resp['CLIENT'] = $client;
+		$responce = $sendinModule->emailAdd($params['email'], $resp, $newsletter_status);
 		return $this;
 	}
 	public function updateNewObserver($observer)
 	{
-		$extra = null;	
 		$params = Mage::app()->getRequest()->getParams();
 		$params = empty($params)?array():$params;
 		$cus_session = Mage::getSingleton('customer/session')->getCustomer();
-		
+		$sendinModule = Mage::getModel('sendinblue/sendinblue');
+		$attributesName = $sendinModule->allAttributesName();
+
 		$customerSessionEmail = $cus_session->getEmail();
-		$customer = $cus_session;
 		if (empty($customerSessionEmail)) {
 			$customer = $observer->getCustomer();
-		}
-		
-		$cus_data = $cus_session->getData();
-		$user_lang = isset($cus_data['created_in'])? $cus_data['created_in'] :'';
-		
-		$customerEmail = $customer->getEmail();
-		$email = isset($params['email'])? $params['email'] : $customerEmail;
-		
-		$cid = $customer->getEntityid();
-		$cid = isset($cid)?$cid:'';
-		
-		$fname = $customer->getFirstname();
-		$fname = empty($fname)?'':$fname;
-		$lname = $customer->getLastname();
-		$lname = empty($lname)?'':$lname;
-
-			$collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToFilter('parent_id',$cid);
-
-		$telephone = '';
-		foreach ($collectionAddress as $customerPhno) {
-			$phone_sms = $customerPhno->getData('telephone');
-			$firstname_value = $customerPhno->getData('firstname');
-			$lastname_value = $customerPhno->getData('lastname');
-			$telephone = empty($phone_sms)?'':$phone_sms;
-			$firstname = empty($firstname_value)?'':$firstname_value;
-			$lastname = empty($lastname_value)?'':$lastname_value;
-			
-		}
-		$telephone_no = isset($params['telephone'])?$params['telephone']:'';
-		if (!empty($telephone_no) || (isset($params['default_billing']) && $params['default_billing'] == 1))
-		{
-			$country_idvalue = isset($params['country_id'])?$params['country_id']:'';
-			if(!empty($params['country_id']))
-			{
-            $tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
-			$sql = 'SELECT country_prefix  FROM '.$tableCountry.' WHERE iso_code = "'.$country_idvalue.'"';
-            $country_id = Mage::getSingleton('core/resource') ->getConnection('core_read')->fetchRow($sql);
-			}
-			$country_id_code = empty($country_id['country_prefix'])?'':$country_id['country_prefix'];
-			$telephone = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($telephone_no, $country_id_code);
+			$customerData = $customer->getData();
 		}
 		else
-		{	
-			$telephone = !empty($telephone)?$telephone:'';
+		$customerData = $cus_session->getData();
+
+		$user_lang = isset($customerData['created_in'])? $customerData['created_in'] :'';
+		$email = $customerData['email'];
+		$cid = isset($customerData['entity_id'])?$customerData['entity_id']:'';		
+		$collectionAddress = Mage::getModel('customer/address')->getCollection()->addAttributeToSelect('telephone')->addAttributeToSelect('firstname')->addAttributeToSelect('lastname')->addAttributeToSelect('company')->addAttributeToSelect('street')->addAttributeToSelect('postcode')->addAttributeToSelect('region')->addAttributeToSelect('country_id')->addAttributeToSelect('city')->addAttributeToFilter('parent_id',$cid);
+
+		$telephone = '';
+		$customer_addr = array();
+		$customer_addr_data = array();
+		foreach ($collectionAddress as $customerPhno) {
+			$customer_addr = $customerPhno->getData();	
+			if (!empty($customer_addr['telephone']))
+			{
+				if(!empty($customer_addr['country_id']))
+				{
+					$country_code = $sendinModule->getCountryCode($customer_addr['country_id']);
+					$customer_addr['telephone'] = $sendinModule->checkMobileNumber($customer_addr['telephone'], $country_code);
+				}
+			}		
 		}
-		
-		$firstname = empty($firstname)?'':$firstname;
-		$lastname = empty($lastname)?'':$lastname;
-		
-		if (!empty($fname)|| !empty($lname))
+		$customer_addr_data = array_merge($customer_addr, $customerData);
+		if (!empty($customerData['firstname']) && !empty($customerData['lastname']))
 			$client = 1;
 		else
 			$client = 0;
 			
-		$is_subscribed = isset($params['is_subscribed'])?$params['is_subscribed']:'';
+		$is_subscribed = !empty($customer_addr_data['is_subscribed'])?$customer_addr_data['is_subscribed']:$params['is_subscribed'];
 		
-		if (!empty($fname) || !empty($lname) || !empty($telephone) || !empty($email))
+		if (!empty($customerData['firstname']) || !empty($customer_addr['telephone']) || !empty($email))
 		{
 			$costomer_data = Mage::getModel('newsletter/subscriber')->loadByEmail($email);
 			$nlStatus = $costomer_data->getStatus();
-			
-			$extra = $fname.'|'.$lname.'|'.$user_lang.'|'.$client.'|'.$telephone;
+			$resp = $sendinModule->merge_my_array($attributesName, $customer_addr_data);
+			$resp['CLIENT'] = $client;
 			if (isset($is_subscribed) && $is_subscribed == 1 && empty($nlStatus))
 			{
-				$responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($email, $extra, $is_subscribed);
-				Mage::getModel('sendinblue/sendinblue')->sendWsTemplateMail($email);
+				$responce = $sendinModule->emailAdd($email, $resp, $is_subscribed);
+				$sendinModule->sendWsTemplateMail($email);
 			}
 			elseif (!empty($nlStatus))
 			{
-				$responce = Mage::getModel('sendinblue/sendinblue')->emailAdd($email, $extra);
+				$responce = $sendinModule->emailAdd($email, $resp);
 			}	
 		}
 		
 		if (isset($is_subscribed) && !empty($is_subscribed) && $is_subscribed === 0) {
 
-			$responce = Mage::getModel('sendinblue/sendinblue')->emailDelete($email);
+			$responce = $sendinModule->emailDelete($email);
 		}
 		
 		return $this;
@@ -179,9 +164,9 @@ class Sendinblue_Sendinblue_Model_Observer
 	public function updateStatus($observer)
 	{
 		$order = $observer->getEvent()->getOrder();
-		
+
 		if ($order->getState() == Mage_Sales_Model_Order::STATE_PROCESSING) 
-		{  
+		{
 			$history = $order->getShipmentsCollection();
 			$history_array=$history->toarray();
 			if($history_array['totalRecords'] > 0)
@@ -195,14 +180,16 @@ class Sendinblue_Sendinblue_Model_Observer
 				$mobile_sms = !empty($mobile_sms)?$mobile_sms:'';
 				$countryid = $_shippingAddress->getCountryId();
 				$countryid = !empty($countryid)?$countryid:'';
-				$tableCountry = Mage::getSingleton('core/resource')->getTableName('sendinblue_country_codes');
-				$sql = 'SELECT * FROM '.$tableCountry.' WHERE iso_code = "'.$countryid.'" ';
-				$connection = Mage::getSingleton('core/resource')->getConnection('core_read');
+				$codeResource = Mage::getSingleton('core/resource');
+				$tableCountry = $codeResource->getTableName('sendinblue_country_codes');
+				$sql = 'SELECT `country_prefix` FROM '.$tableCountry.' WHERE iso_code = "'.$countryid.'" ';
+				$connection = $codeResource->getConnection('core_read');
 				$data = $connection->fetchRow($sql);
 				$mobile = '';
 				$country_prefix = $data['country_prefix'];
-				if(isset($country_prefix) && !empty($country_prefix))				
-				$mobile = Mage::getModel('sendinblue/sendinblue')->checkMobileNumber($mobile_sms,$country_prefix);
+				$sendinblueModule = Mage::getModel('sendinblue/sendinblue');
+				if(isset($country_prefix) && !empty($country_prefix))
+				$mobile = $sendinblueModule->checkMobileNumber($mobile_sms,$country_prefix);
 				$firstname = $_shippingAddress->getFirstname();
 				$firstname = !empty($firstname )?$firstname :'';
 				$lastname = $_shippingAddress->getLastname();
@@ -221,48 +208,50 @@ class Sendinblue_Sendinblue_Model_Observer
 				$ord_date = date('m/d/Y', strtotime($orderdate));
 
 				$total_pay = $orderprice.' '.$courrencycode;
-				$msgbody = Mage::getModel('sendinblue/sendinblue')->getSendSmsShipingMessage();
+				$msgbody = $sendinblueModule->getSendSmsShipingMessage();
 				$fname = str_replace('{first_name}', $firstname, $msgbody);
 				$lname = str_replace('{last_name}', $lastname."\r\n", $fname);
 				$procuct_price = str_replace('{order_price}', $total_pay, $lname);
 				$order_date = str_replace('{order_date}', $ord_date."\r\n", $procuct_price);
 				$msgbody = str_replace('{order_reference}', $ref_num, $order_date);
-				
+
 				$arr = array();
 				$arr['to'] = $mobile;
-				$arr['from'] = Mage::getModel('sendinblue/sendinblue')->getSendSmsShipingSubject();
+				$arr['from'] = $sendinblueModule->getSendSmsShipingSubject();
 				$arr['text'] = $msgbody;
-				Mage::getModel('sendinblue/sendinblue')->sendSmsApi($arr);
+				$sendinblueModule->sendSmsApi($arr);
 			}
 		}
 	}
 
 	public function subscribedToNewsletter($observer)
     {
-	  $data = $observer->subscriber;
-	  $params = Mage::app()->getRequest()->getParams();
-	  $params = empty($params)?array():$params;
-	  if (!isset($params['firstname']) && !isset($params['lastname']))
-	  {
-		 if($data->subscriber_status == 3)
-		  Mage::getModel('sendinblue/sendinblue')->emailDelete($data->subscriber_email);
-		 else if ($data->subscriber_status == 1)
-		 {
-		  Mage::getModel('sendinblue/sendinblue')->emailSubscribe($data->subscriber_email);
-		  Mage::getModel('sendinblue/sendinblue')->sendWsTemplateMail($data->subscriber_email);
-		 }
-	  }	 	 
+		$data = $observer->subscriber;
+		$params = Mage::app()->getRequest()->getParams();
+		$params = empty($params)?array():$params;
+		if (!isset($params['firstname']) && !isset($params['lastname']))
+		{
+			$sibObj = Mage::getModel('sendinblue/sendinblue');
+		
+			if($data->subscriber_status == 3)
+				$sibObj->emailDelete($data->subscriber_email);
+			else if ($data->subscriber_status == 1)
+			{
+				$sibObj->emailSubscribe($data->subscriber_email);
+				$sibObj->sendWsTemplateMail($data->subscriber_email);
+			}
+		}
 	}
 	public function disableCache(Varien_Event_Observer $observer)
     {
-      $action = $observer->getEvent()->getControllerAction();
+		$action = $observer->getEvent()->getControllerAction();
 
-      if ($action instanceof Sendinblue_Sendinblue_Adminhtml_MyformController) { // eg. Mage_Catalog_ProductController
-        $request = $action->getRequest();
-        $cache = Mage::app()->getCacheInstance();
-		Mage::getSingleton('core/session')->addSuccess('Done successfully');
-        $cache->banUse('full_page'); // Tell Magento to 'ban' the use of FPC for this request
-      }
+		if ($action instanceof Sendinblue_Sendinblue_Adminhtml_MyformController) { // eg. Mage_Catalog_ProductController
+			$request = $action->getRequest();
+			$cache = Mage::app()->getCacheInstance();
+			Mage::getSingleton('core/session')->addSuccess('Done successfully');
+			$cache->banUse('full_page'); // Tell Magento to 'ban' the use of FPC for this request
+		}
     }
 
 }
