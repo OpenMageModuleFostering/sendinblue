@@ -217,7 +217,7 @@ class Sendinblue_Sendinblue_Model_Observer
                 $smsInformation['to'] = $mobile;
                 $smsInformation['from'] = $senderShipment;
                 $smsInformation['text'] = $messageBody;
-                if (!empty($senderShipment) && !empty($messageBody) !empty($mobile)) {
+                if (!empty($senderShipment) && !empty($messageBody) && !empty($mobile)) {
                     $sendinblueModule->sendSmsApi($smsInformation);
                 }
             }
