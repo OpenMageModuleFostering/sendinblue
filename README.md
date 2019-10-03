@@ -1,3 +1,5 @@
+
+
 ## Original Package Description
 
 Synchronize your Magento contacts with SendinBlue platform, easily send your marketing and transactional emails and SMS.
